@@ -1,2 +1,2 @@
-# automaton
+# Automaton
 Finite State Automata Interface
