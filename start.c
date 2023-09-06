@@ -19,6 +19,7 @@ GtkWidget *info_simbolos;
 GtkWidget *spn_estados;
 GtkWidget *spn_simbolos;
 GtkBuilder *builder;
+GtkWidget *btn_exit;
 
 int main(int argc, char *argv[]) {
     // Init GTK
@@ -43,6 +44,8 @@ int main(int argc, char *argv[]) {
 
     spn_estados = GTK_WIDGET(gtk_builder_get_object(builder, "spn_estados"));
     spn_simbolos = GTK_WIDGET(gtk_builder_get_object(builder, "spn_simbolos"));
+
+    btn_exit = GTK_WIDGET(gtk_builder_get_object(builder, "btn_exit"));
 
     gtk_widget_show(window_start);
     gtk_main();
@@ -84,5 +87,11 @@ void on_btn_dialog_1_clicked(GtkWidget *button) {
 void on_btn_dialog_2_clicked(GtkWidget *button) {
     if(info_simbolos != NULL){
         gtk_widget_hide(info_simbolos);
+    }
+}
+
+void on_btn_exit_clicked(GtkWidget *button) {
+    if(window_start != NULL){
+        gtk_main_quit();
     }
 }
