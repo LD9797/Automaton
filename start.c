@@ -16,6 +16,8 @@ GtkWidget *btn_dialog_1;
 GtkWidget *btn_dialog_2;
 GtkWidget *btn_info_simbolos;
 GtkWidget *info_simbolos;
+GtkWidget *spn_estados;
+GtkWidget *spn_simbolos;
 GtkBuilder *builder;
 
 int main(int argc, char *argv[]) {
@@ -39,18 +41,28 @@ int main(int argc, char *argv[]) {
     info_simbolos = GTK_WIDGET(gtk_builder_get_object(builder, "info_simbolos"));
     btn_dialog_2 = GTK_WIDGET(gtk_builder_get_object(builder, "btn_dialog_2"));
 
+    spn_estados = GTK_WIDGET(gtk_builder_get_object(builder, "spn_estados"));
+    spn_simbolos = GTK_WIDGET(gtk_builder_get_object(builder, "spn_simbolos"));
+
     gtk_widget_show(window_start);
     gtk_main();
 
     return EXIT_SUCCESS;
 }
 
+void on_btn_continuar_clicked(GtkWidget *button) {
+    gdouble cantidad_estados = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_estados));
+    gdouble cantidad_simbolos = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_simbolos));
+
+    int estados_int = (int)cantidad_estados;
+    int simbolos_int = (int)cantidad_simbolos;
+
+    g_print("Estados: %d\n", estados_int);
+    g_print("Simbolos: %d\n", simbolos_int);
+}
+
 void on_btn_info_estados_clicked(GtkWidget *button) {
     if (info_estados != NULL) {
-        // Open dialog in the center of the parent window.
-        gtk_window_set_transient_for(GTK_WINDOW(info_estados), GTK_WINDOW(window_start));
-        gtk_window_set_position(GTK_WINDOW(info_estados), GTK_WIN_POS_CENTER_ON_PARENT);
-
         gtk_dialog_run(GTK_DIALOG(info_estados));
         gtk_widget_hide(info_estados);
     }
@@ -58,10 +70,6 @@ void on_btn_info_estados_clicked(GtkWidget *button) {
 
 void on_btn_info_simbolos_clicked(GtkWidget *button) {
     if(info_simbolos != NULL){
-        // Open dialog in the center of the parent window.
-        gtk_window_set_transient_for(GTK_WINDOW(info_simbolos), GTK_WINDOW(window_start));
-        gtk_window_set_position(GTK_WINDOW(info_simbolos), GTK_WIN_POS_CENTER_ON_PARENT);
-
         gtk_dialog_run(GTK_DIALOG(info_simbolos));
         gtk_widget_hide(info_simbolos);
     }
