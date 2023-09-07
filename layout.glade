@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.2 -->
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <object class="GtkImage" id="image1">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-refresh</property>
+  </object>
+  <object class="GtkImage" id="image2">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-dialog-info</property>
+  </object>
+  <object class="GtkMenu" id="menu_options">
+    <property name="name">menu_options</property>
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkImageMenuItem" id="menu_item_clean">
+        <property name="label" translatable="yes">Refrescar</property>
+        <property name="name">menu_item_clean</property>
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="image">image1</property>
+        <property name="use-stock">False</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkImageMenuItem" id="menuitem_info">
+        <property name="label" translatable="yes">Información</property>
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="image">image2</property>
+        <property name="use-stock">False</property>
+      </object>
+    </child>
+  </object>
+  <object class="GtkApplicationWindow" id="screen">
+    <property name="name">screen</property>
+    <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Proyecto #1</property>
+    <property name="resizable">False</property>
+    <property name="window-position">center</property>
+    <property name="urgency-hint">True</property>
+    <property name="gravity">center</property>
+    <child>
+      <object class="GtkBox" id="screen3_main_box">
+        <property name="name">screen3_main_box</property>
+        <property name="width-request">-1</property>
+        <property name="height-request">-1</property>
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-left">5</property>
+        <property name="margin-right">5</property>
+        <property name="margin-start">5</property>
+        <property name="margin-end">5</property>
+        <property name="margin-top">5</property>
+        <property name="margin-bottom">5</property>
+        <property name="hexpand">True</property>
+        <property name="vexpand">True</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">10</property>
+        <child>
+          <object class="GtkScrolledWindow" id="scrolled_view">
+            <property name="name">scrolled_view</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="margin-left">5</property>
+            <property name="margin-right">5</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <property name="hscrollbar-policy">never</property>
+            <property name="vscrollbar-policy">always</property>
+            <property name="min-content-width">30</property>
+            <property name="min-content-height">50</property>
+            <property name="max-content-width">30</property>
+            <property name="max-content-height">50</property>
+            <child>
+              <object class="GtkTextView" id="text_view">
+                <property name="name">textview</property>
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can-focus">True</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <property name="vscroll-policy">natural</property>
+                <property name="pixels-above-lines">2</property>
+                <property name="pixels-below-lines">2</property>
+                <property name="editable">False</property>
+                <property name="wrap-mode">char</property>
+                <property name="left-margin">5</property>
+                <property name="right-margin">5</property>
+                <property name="top-margin">5</property>
+                <property name="bottom-margin">5</property>
+                <property name="cursor-visible">False</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkButton" id="back_button">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Regresar</property>
+                <property name="always-show-image">True</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="stock">gtk-undo</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSeparator">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="padding">5</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="string_input">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="has-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="primary-icon-stock">gtk-add</property>
+                <property name="input-purpose">alpha</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSeparator">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="padding">5</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="include_button">
+                <property name="name">include_button</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Incluir hilera</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="stock">gtk-apply</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSeparator">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="padding">5</property>
+                <property name="position">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="open_menu_button">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Más opciones</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="stock">gtk-justify-fill</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">6</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
