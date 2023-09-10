@@ -14,6 +14,8 @@ GtkWidget *grid;
 GtkWidget *start_window = NULL;
 GObject *scrolled_window;
 GtkComboBoxText ***combo_boxes_array;
+GtkEntry **entry_simbolos_array;
+GtkEntry **entry_estados_array;
 int global_estados;
 int global_simbolos;
 
@@ -55,6 +57,8 @@ void create_table(int rows, int cols){
 
     GSList *radio_group = NULL;
     combo_boxes_array = (GtkComboBoxText ***) (GtkComboBox ***) malloc(rows * sizeof(GtkComboBox **));
+    entry_simbolos_array = (GtkEntry **)malloc(cols * sizeof(GtkEntry *));
+    entry_estados_array = (GtkEntry **)malloc(rows * sizeof(GtkEntry *));
     for (int i = 0; i < rows; ++i) {
         combo_boxes_array[i] = (GtkComboBoxText **) (GtkComboBox **) malloc(cols * sizeof(GtkComboBox *));
         for (int j = 0; j < cols + 2; ++j) {
@@ -85,6 +89,7 @@ void create_table(int rows, int cols){
                 gtk_entry_set_alignment(GTK_ENTRY(widget_to_add), 0.5); // Alinear Centro
                 char default_text[] = { alphabet[j - 3], '\0' };
                 gtk_entry_set_text(GTK_ENTRY(widget_to_add), default_text);
+                entry_simbolos_array[j - 3] = GTK_ENTRY(widget_to_add);
             }
 
             // Radio Buttons
@@ -96,7 +101,12 @@ void create_table(int rows, int cols){
             // Entries para estados
             else if (j == 1 && i != 0) {
                 widget_to_add = gtk_entry_new();
-                gtk_entry_set_width_chars(GTK_ENTRY(widget_to_add), 10);
+                gtk_entry_set_width_chars(GTK_ENTRY(widget_to_add), 12);
+                gtk_entry_set_width_chars(GTK_ENTRY(widget_to_add), 12);
+                gtk_entry_set_max_length(GTK_ENTRY(widget_to_add),12);
+                gtk_entry_set_width_chars(GTK_ENTRY(widget_to_add), 12);
+                gtk_entry_set_alignment(GTK_ENTRY(widget_to_add), 0.5); // Alinear Centro
+                entry_estados_array[i - 1] = GTK_ENTRY(widget_to_add);
             }
 
             // Labels de los estados
@@ -116,14 +126,16 @@ void create_table(int rows, int cols){
                 // gtk_widget_set_hexpand(widget_to_add, TRUE);
                 // gtk_widget_set_vexpand(widget_to_add, TRUE);
 
-                gtk_widget_set_size_request(widget_to_add, 20, 40);
+                gtk_widget_set_size_request(widget_to_add, 100, 40);
 
-                gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget_to_add), "Option 1");
-                gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget_to_add), "Option 2");
-                gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget_to_add), "Option 3");
+                for(int x = 0; x < rows - 1; ++x){
+                    char *text = g_strdup_printf("%d", x + 1);
+                    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget_to_add), text);
+                }
+
                 gtk_combo_box_set_active(GTK_COMBO_BOX(widget_to_add), 0);
-
                 combo_boxes_array[i - 1][j - 3] = GTK_COMBO_BOX_TEXT(widget_to_add);
+
             } else {
                 continue;
             }
