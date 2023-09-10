@@ -7,7 +7,7 @@
     <property name="height-request">600</property>
     <property name="can-focus">False</property>
     <child>
-      <object class="GtkFixed">
+      <object class="GtkFixed" id="fixed2">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <child>
@@ -44,8 +44,42 @@
             </child>
           </object>
           <packing>
-            <property name="x">20</property>
+            <property name="x">13</property>
             <property name="y">10</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow" id="Scrolled1">
+            <property name="width-request">730</property>
+            <property name="height-request">450</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="shadow-type">in</property>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="x">20</property>
+            <property name="y">63</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="stock">gtk-info</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="x">756</property>
+            <property name="y">64</property>
           </packing>
         </child>
       </object>
