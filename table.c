@@ -16,6 +16,8 @@ GObject *scrolled_window;
 
 void create_table(int rows, int cols);
 void set_widget_background_color(GtkWidget *widget, const gchar *color);
+void set_border(GtkWidget *widget);
+void set_css(GtkWidget *widget, const gchar *css);
 
 void deploy_window_table(int estados, int simbolos, GtkWidget *previous_window){
     start_window = previous_window;
@@ -64,10 +66,16 @@ void create_table(int rows, int cols){
                 g_free(label_text);
             }
 
+            // Entries para símbolos
             else if (i == 0 && j >= 3) {
-                gchar *label_text = g_strdup_printf("Header %d", j - 2);
-                widget_to_add = gtk_label_new(label_text);
-                g_free(label_text);
+                const char *alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                widget_to_add = gtk_entry_new();
+                gtk_entry_set_width_chars(GTK_ENTRY(widget_to_add), 1);
+                gtk_entry_set_max_length(GTK_ENTRY(widget_to_add),1);
+                gtk_entry_set_width_chars(GTK_ENTRY(widget_to_add), 1);
+                gtk_entry_set_alignment(GTK_ENTRY(widget_to_add), 0.5); // Alinear Centro
+                char default_text[] = { alphabet[j - 3], '\0' };
+                gtk_entry_set_text(GTK_ENTRY(widget_to_add), default_text);
             }
 
             else if (j == 0 && i != 0) {
@@ -77,10 +85,11 @@ void create_table(int rows, int cols){
 
             else if (j == 1 && i != 0) {
                 widget_to_add = gtk_entry_new();
+                gtk_entry_set_width_chars(GTK_ENTRY(widget_to_add), 10);
             }
 
             else if (j == 2 && i != 0) {
-                gchar *label_text = g_strdup_printf("Row %d", i);
+                gchar *label_text = g_strdup_printf("%d", i);
                 widget_to_add = gtk_label_new(label_text);
                 g_free(label_text);
 
@@ -94,7 +103,7 @@ void create_table(int rows, int cols){
                 // gtk_widget_set_hexpand(widget_to_add, TRUE);
                 // gtk_widget_set_vexpand(widget_to_add, TRUE);
 
-                gtk_widget_set_size_request(widget_to_add, 60, 40);
+                gtk_widget_set_size_request(widget_to_add, 20, 40);
 
                 gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget_to_add), "Option 1");
                 gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget_to_add), "Option 2");
@@ -104,8 +113,14 @@ void create_table(int rows, int cols){
                 continue;
             }
 
-            if (i == 1) {
+            // Primera fila resaltada.
+            if (i == 1 && j >= 1) {
                 set_widget_background_color(widget_to_add, "red");
+            }
+
+            // Frames negros.
+            if (j >= 1){
+                set_border(widget_to_add);
             }
 
             gtk_grid_attach(GTK_GRID(grid), widget_to_add, j, i, 1, 1);
@@ -113,15 +128,23 @@ void create_table(int rows, int cols){
     }
 }
 
-void set_widget_background_color(GtkWidget *widget, const gchar *color) {
-    GtkStyleContext *context = gtk_widget_get_style_context(widget);
-    gchar *css_str = g_strdup_printf("* { color: %s; border: 1px solid black;}", color);
-    GtkCssProvider *provider = gtk_css_provider_new();
+void set_border(GtkWidget *widget){
+    gchar *css_str = g_strdup_printf("* {border: 1px solid black;}");
+    set_css(widget, css_str);
+    g_free(css_str);
+}
 
+void set_widget_background_color(GtkWidget *widget, const gchar *color) {
+    gchar *css_str = g_strdup_printf("* { color: %s;}", color);
+    set_css(widget, css_str);
+    g_free(css_str);
+}
+
+void set_css(GtkWidget *widget, const gchar *css_str){
+    GtkStyleContext *context = gtk_widget_get_style_context(widget);
+    GtkCssProvider *provider = gtk_css_provider_new();
     gtk_css_provider_load_from_data(provider, css_str, -1, NULL);
     gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
-
-    g_free(css_str);
     g_object_unref(provider);
 }
 
