@@ -13,11 +13,15 @@ GtkWidget *window_table;
 GtkWidget *grid;
 GtkWidget *start_window = NULL;
 GObject *scrolled_window;
+GtkComboBoxText ***combo_boxes_array;
+int global_estados;
+int global_simbolos;
 
 void create_table(int rows, int cols);
 void set_widget_background_color(GtkWidget *widget, const gchar *color);
 void set_border(GtkWidget *widget);
 void set_css(GtkWidget *widget, const gchar *css);
+void free_global_combo_boxes_array(int rows);
 
 void deploy_window_table(int estados, int simbolos, GtkWidget *previous_window){
     start_window = previous_window;
@@ -29,9 +33,11 @@ void deploy_window_table(int estados, int simbolos, GtkWidget *previous_window){
     g_signal_connect(window_table, "destroy", G_CALLBACK(gtk_main_quit), NULL);
     gtk_builder_connect_signals(builder, NULL);
 
+    global_estados = estados;
+    global_simbolos = simbolos;
+
     g_strdup_printf("Recibido estados: %d\n", estados);
     g_strdup_printf("Recibido simbolos %d\n", simbolos);
-
 
     scrolled_window = gtk_builder_get_object(builder, "Scrolled1");
     grid = gtk_grid_new();
@@ -48,18 +54,21 @@ void create_table(int rows, int cols){
    // gtk_widget_set_vexpand(grid, TRUE);
 
     GSList *radio_group = NULL;
-
+    combo_boxes_array = (GtkComboBoxText ***) (GtkComboBox ***) malloc(rows * sizeof(GtkComboBox **));
     for (int i = 0; i < rows; ++i) {
+        combo_boxes_array[i] = (GtkComboBoxText **) (GtkComboBox **) malloc(cols * sizeof(GtkComboBox *));
         for (int j = 0; j < cols + 2; ++j) {
 
             GtkWidget *widget_to_add;
 
+            // Label Editar Estados;
             if (i == 0 && j == 1) {
                 gchar *label_text = g_strdup_printf("Editar Estados");
                 widget_to_add = gtk_label_new(label_text);
                 g_free(label_text);
             }
 
+            // Label Simbolos / Estados
             else if (i == 0 && j == 2) {
                 gchar *label_text = g_strdup_printf("Símbolos /\n Estados");
                 widget_to_add = gtk_label_new(label_text);
@@ -78,16 +87,19 @@ void create_table(int rows, int cols){
                 gtk_entry_set_text(GTK_ENTRY(widget_to_add), default_text);
             }
 
+            // Radio Buttons
             else if (j == 0 && i != 0) {
                 widget_to_add = gtk_radio_button_new_with_label(radio_group, "");
                 radio_group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(widget_to_add));
             }
 
+            // Entries para estados
             else if (j == 1 && i != 0) {
                 widget_to_add = gtk_entry_new();
                 gtk_entry_set_width_chars(GTK_ENTRY(widget_to_add), 10);
             }
 
+            // Labels de los estados
             else if (j == 2 && i != 0) {
                 gchar *label_text = g_strdup_printf("%d", i);
                 widget_to_add = gtk_label_new(label_text);
@@ -96,6 +108,7 @@ void create_table(int rows, int cols){
                 gtk_widget_set_size_request(widget_to_add, 100, - 1);  // 100 is the minimum width
             }
 
+            // Combo boxes
             else if (j > 2 || i == 1) {
 
                 widget_to_add = gtk_combo_box_text_new();
@@ -109,6 +122,8 @@ void create_table(int rows, int cols){
                 gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget_to_add), "Option 2");
                 gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget_to_add), "Option 3");
                 gtk_combo_box_set_active(GTK_COMBO_BOX(widget_to_add), 0);
+
+                combo_boxes_array[i - 1][j - 3] = GTK_COMBO_BOX_TEXT(widget_to_add);
             } else {
                 continue;
             }
@@ -126,6 +141,7 @@ void create_table(int rows, int cols){
             gtk_grid_attach(GTK_GRID(grid), widget_to_add, j, i, 1, 1);
         }
     }
+    g_strdup_printf("DONE");
 }
 
 void set_border(GtkWidget *widget){
@@ -152,7 +168,7 @@ void on_btn_return_clicked(GtkWidget *button) {
     if (gtk_widget_is_toplevel(window_table)) {
         gtk_widget_hide(window_table);
     }
-
+    free_global_combo_boxes_array(global_estados);
     // Show the original window
     if (start_window) {
         gtk_widget_show(start_window);
@@ -163,4 +179,11 @@ void on_btn_exit_table_clicked(GtkWidget *button) {
     if(window_table != NULL){
         gtk_main_quit();
     }
+}
+
+void free_global_combo_boxes_array(int rows) {
+    for (int i = 0; i < rows; ++i) {
+        free(combo_boxes_array[i]);
+    }
+    free(combo_boxes_array);
 }
