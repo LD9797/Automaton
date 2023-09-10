@@ -16,6 +16,8 @@ GObject *scrolled_window;
 GtkComboBoxText ***combo_boxes_array;
 GtkEntry **entry_simbolos_array;
 GtkEntry **entry_estados_array;
+GtkCheckButton **check_button_array;
+
 int global_estados;
 int global_simbolos;
 
@@ -54,11 +56,10 @@ void deploy_window_table(int estados, int simbolos, GtkWidget *previous_window){
 void create_table(int rows, int cols){
    // gtk_widget_set_hexpand(grid, TRUE);
    // gtk_widget_set_vexpand(grid, TRUE);
-
-    GSList *radio_group = NULL;
     combo_boxes_array = (GtkComboBoxText ***) (GtkComboBox ***) malloc(rows * sizeof(GtkComboBox **));
     entry_simbolos_array = (GtkEntry **)malloc(cols * sizeof(GtkEntry *));
     entry_estados_array = (GtkEntry **)malloc(rows * sizeof(GtkEntry *));
+    check_button_array = (GtkCheckButton **)malloc(rows * sizeof(GtkEntry *));
     for (int i = 0; i < rows; ++i) {
         combo_boxes_array[i] = (GtkComboBoxText **) (GtkComboBox **) malloc(cols * sizeof(GtkComboBox *));
         for (int j = 0; j < cols + 2; ++j) {
@@ -92,10 +93,10 @@ void create_table(int rows, int cols){
                 entry_simbolos_array[j - 3] = GTK_ENTRY(widget_to_add);
             }
 
-            // Radio Buttons
+            // Check Radio Buttons
             else if (j == 0 && i != 0) {
-                widget_to_add = gtk_radio_button_new_with_label(radio_group, "");
-                radio_group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(widget_to_add));
+                widget_to_add = gtk_check_button_new_with_label("");
+                check_button_array[i - 1] = GTK_CHECK_BUTTON(widget_to_add);
             }
 
             // Entries para estados
@@ -128,6 +129,7 @@ void create_table(int rows, int cols){
 
                 gtk_widget_set_size_request(widget_to_add, 100, 40);
 
+                gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget_to_add), "-");
                 for(int x = 0; x < rows - 1; ++x){
                     char *text = g_strdup_printf("%d", x + 1);
                     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget_to_add), text);
@@ -198,4 +200,12 @@ void free_global_combo_boxes_array(int rows) {
         free(combo_boxes_array[i]);
     }
     free(combo_boxes_array);
+}
+
+
+void on_btn_evaluar_clicked(GtkWidget *button){
+
+
+
+
 }
