@@ -13,6 +13,8 @@ add_definitions(${GTK3_CFLAGS_OTHER})
 include_directories(/usr/include/gtk-3.0)
 
 add_executable(Automaton
-        start.c)
+        start.c
+        table.c
+        table.h)
 
 target_link_libraries(Automaton ${GTK3_LIBRARIES} -lm -export-dynamic)

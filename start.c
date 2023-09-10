@@ -8,6 +8,7 @@
 #include <gtk/gtkx.h>
 #include <math.h>
 #include <ctype.h>
+#include "table.h"
 
 GtkWidget *window_start;
 GtkWidget *btn_info_estados;
@@ -18,13 +19,24 @@ GtkWidget *btn_info_simbolos;
 GtkWidget *info_simbolos;
 GtkWidget *spn_estados;
 GtkWidget *spn_simbolos;
-GtkBuilder *builder;
 GtkWidget *btn_exit;
+GtkWidget *btn_continuar;
+
+void deploy_window();
 
 int main(int argc, char *argv[]) {
     // Init GTK
     gtk_init(&argc, &argv);
 
+    deploy_window();
+
+    gtk_main();
+
+    return EXIT_SUCCESS;
+}
+
+void deploy_window(){
+    GtkBuilder *builder;
     builder = gtk_builder_new_from_file ("Start.glade");
     window_start = GTK_WIDGET(gtk_builder_get_object(builder, "window_start"));
 
@@ -45,12 +57,10 @@ int main(int argc, char *argv[]) {
     spn_estados = GTK_WIDGET(gtk_builder_get_object(builder, "spn_estados"));
     spn_simbolos = GTK_WIDGET(gtk_builder_get_object(builder, "spn_simbolos"));
 
+    btn_continuar = GTK_WIDGET(gtk_builder_get_object(builder, "btn_continuar"));
     btn_exit = GTK_WIDGET(gtk_builder_get_object(builder, "btn_exit"));
-
+    
     gtk_widget_show(window_start);
-    gtk_main();
-
-    return EXIT_SUCCESS;
 }
 
 void on_btn_continuar_clicked(GtkWidget *button) {
@@ -62,6 +72,12 @@ void on_btn_continuar_clicked(GtkWidget *button) {
 
     g_print("Estados: %d\n", estados_int);
     g_print("Simbolos: %d\n", simbolos_int);
+
+    deploy_window_table(estados_int, simbolos_int, window_start);
+
+    if (gtk_widget_is_toplevel(window_start)) {
+        gtk_widget_hide(window_start);
+    }
 }
 
 void on_btn_info_estados_clicked(GtkWidget *button) {
