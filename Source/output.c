@@ -1,8 +1,6 @@
-#include <stdlib.h>
-#include <gtk/gtk.h>
-#include <gdk/gdk.h>
-#include <stdbool.h>
-#include <pango/pango.h>
+#include "../Headers/output.h"
+
+/// GTK WIDGETS
 
 GtkMenu *menu;
 GtkEntry *entry;
@@ -14,17 +12,27 @@ GtkTextView *text_view;
 GtkButton *include_button;
 GtkMenuItem *menu_item_clean;
 
+/// CONSTANTS
+
+const int DEFAULT_WINDOW_WIDTH = 800;
+const int DEFAULT_WINDOW_HEIGHT = 600;
+const int WARNING_POPOVER_INTERVAL = 3;
+
+/// PUBLIC METHODS
+
 void on_window_destroy(GtkWidget *widget, gpointer user_data) {
     gtk_main_quit();
 }
 
-void show_menu(GtkButton *button, GtkMenu *menu) {
+void show_menu(GtkButton *button) {
     gtk_menu_popup_at_widget(GTK_MENU(menu), GTK_WIDGET(button), GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH, NULL);
 }
 
 void clear_text_view() {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(text_view);
     gtk_text_buffer_set_text(buffer, "", -1);
+    gtk_entry_set_text(entry, "");
+    gtk_widget_grab_focus(GTK_WIDGET(entry));
 }
 
 void add_text_with_color(const gchar *text, GdkRGBA color) {
@@ -84,25 +92,19 @@ void add_text_from_input_to_text_view() {
         popover = gtk_popover_new(GTK_WIDGET(entry));
         gtk_container_add(GTK_CONTAINER(popover), message_label);
         gtk_widget_show_all(popover);
-        g_timeout_add_seconds(3, (GSourceFunc)gtk_widget_hide, popover);
+        g_timeout_add_seconds(WARNING_POPOVER_INTERVAL, (GSourceFunc)gtk_widget_hide, popover);
     }
     
     gtk_entry_set_text(entry, "");
 }
 
 int main(int argc, char *argv[]) {
+    // Initialize window
     gtk_init(&argc, &argv);
-
     builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "layout.glade", NULL);
     window = GTK_WIDGET(gtk_builder_get_object(builder, "screen"));
-    if (window == NULL) {
-        g_error("Failed to load the Glade file.");
-        return 1;
-    }
-    
-    // Window fixed size
-    gtk_widget_set_size_request(GTK_WIDGET(window), 800, 600);
+    gtk_widget_set_size_request(GTK_WIDGET(window), DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
 
     // Load widgets
     popover = gtk_popover_new(NULL);
@@ -114,7 +116,7 @@ int main(int argc, char *argv[]) {
     menu_item_clean = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menu_item_clean"));
 
     // Connect signals
-    g_signal_connect(menu_button, "clicked", G_CALLBACK(show_menu), menu);
+    g_signal_connect(menu_button, "clicked", G_CALLBACK(show_menu), NULL);
     g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), NULL);
     g_signal_connect(menu_item_clean, "activate", G_CALLBACK(clear_text_view), NULL);
     g_signal_connect(entry, "activate", G_CALLBACK(add_text_from_input_to_text_view), NULL);
@@ -124,13 +126,13 @@ int main(int argc, char *argv[]) {
     GtkTextIter iter;
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(text_view);
     gtk_text_buffer_get_end_iter(buffer, &iter);
-    gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(text_view), &iter, 0.0, FALSE, 0.0, 0.0);
+    gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(text_view), &iter, 0.0, false, 0.0, 0.0);
     gtk_text_buffer_set_text(buffer, "", -1);
 
     // Make the text view inaccessible to mouse selection and events
-    gtk_text_view_set_editable(text_view, FALSE);
-    gtk_text_view_set_cursor_visible(text_view, FALSE);
-    gtk_widget_set_sensitive(GTK_WIDGET(text_view), FALSE);
+    gtk_text_view_set_editable(text_view, false);
+    gtk_text_view_set_cursor_visible(text_view, false);
+    gtk_widget_set_sensitive(GTK_WIDGET(text_view), false);
     
     gtk_widget_show(window);
     gtk_main();
