@@ -19,4 +19,3 @@ add_executable(Automaton
         Headers/dfadriver.h)
 
 target_link_libraries(Automaton ${GTK3_LIBRARIES} -lm -export-dynamic)
-
