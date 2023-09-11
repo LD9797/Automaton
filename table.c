@@ -18,6 +18,8 @@ GtkEntry **entry_simbolos_array;
 GtkEntry **entry_estados_array;
 int global_estados;
 int global_simbolos;
+GtkWidget *btn_info_table;
+GtkWidget *info_table;
 
 void create_table(int rows, int cols);
 void set_widget_background_color(GtkWidget *widget, const gchar *color);
@@ -34,6 +36,9 @@ void deploy_window_table(int estados, int simbolos, GtkWidget *previous_window){
 
     g_signal_connect(window_table, "destroy", G_CALLBACK(gtk_main_quit), NULL);
     gtk_builder_connect_signals(builder, NULL);
+
+    btn_info_table = GTK_WIDGET(gtk_builder_get_object(builder, "btn_info_estados"));
+    info_table = GTK_WIDGET(gtk_builder_get_object(builder, "info_table"));
 
     global_estados = estados;
     global_simbolos = simbolos;
@@ -198,4 +203,17 @@ void free_global_combo_boxes_array(int rows) {
         free(combo_boxes_array[i]);
     }
     free(combo_boxes_array);
+}
+
+void on_btn_info_table_clicked(GtkWidget *button) {
+    if (info_table != NULL) {
+        gtk_dialog_run(GTK_DIALOG(info_table));
+        gtk_widget_hide(info_table);
+    }
+}
+
+void on_btn_ok_clicked(GtkWidget *button) {
+    if (info_table != NULL) {
+        gtk_widget_hide(info_table);
+    }
 }
