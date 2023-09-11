@@ -8,6 +8,8 @@
 #include <math.h>
 #include <ctype.h>
 #include "table.h"
+#include <string.h>
+
 
 GtkWidget *window_table;
 GtkWidget *grid;
@@ -204,8 +206,52 @@ void free_global_combo_boxes_array(int rows) {
 
 
 void on_btn_evaluar_clicked(GtkWidget *button){
+    // TODO Validaciones
+    // Tabla de transiciones, cuando hay un 0 es que no hay transicion.
+    int **Table;
+    Table = malloc(global_estados * sizeof(int *));
+    for(int i = 0; i < global_estados; ++i){
+        Table[i] = malloc(global_simbolos * sizeof(int));
+        for(int j = 0; j < global_simbolos; ++j){
+            gchar *text = gtk_combo_box_text_get_active_text(combo_boxes_array[i][j]);
+            int number = atoi(text);
+            Table[i][j] = number;
+        }
+    }
 
+    // Array de int, one hot vector estados de aceptacion.
+    int *Accept;
+    Accept = malloc(global_estados * sizeof(int));
+    for(int i = 0; i < global_estados; ++i){
+        if(gtk_toggle_button_get_active((GtkToggleButton *) check_button_array[i])){
+            Accept[i] = 1;
+        } else {
+            Accept[i] = 0;
+        }
+    }
 
+    // Array de char (1 solo caracter) de los simbolos.
+    char *Simbolos;
+    Simbolos = malloc(global_simbolos * sizeof(char));
+    for(int i = 0; i < global_simbolos; ++i){
+        const gchar *simbolo = gtk_entry_get_text(entry_simbolos_array[i]);
+        Simbolos[i] = simbolo[0];
+    }
 
+    // Array de strings de los nombres de los estados.
+    // Si no hay un nombre para el estado se devuelve el número de estado (en string i.e. "4").
+    char **Estados;
+    Estados = malloc(global_estados * sizeof(char *));
+    for(int i = 0; i < global_estados; ++i){
+        const gchar *temp_text = gtk_entry_get_text(entry_estados_array[i]);
+        if(strlen(temp_text) == 0){
+            char index_str[3];
+            sprintf(index_str, "%d", i + 1);
+            Estados[i] = strdup(index_str);
+        } else {
+            Estados[i] = strdup(temp_text);
+        }
+    }
 
+    g_print("DONE");
 }
