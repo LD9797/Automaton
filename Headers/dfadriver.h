@@ -13,4 +13,8 @@ struct Registry {
     char symbol;
 };
 
+char **my_DFA_driver (int **Table,
+                      char *simbolos,
+                      const char *string, char **Estados);
+
 #endif //AUTOMATON_DFADRIVER_H

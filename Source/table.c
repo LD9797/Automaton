@@ -115,7 +115,7 @@ void create_table(int rows, int cols){
 
             // Labels de los estados
             else if (j == 2 && i != 0) {
-                gchar *label_text = g_strdup_printf("%d", i);
+                gchar *label_text = g_strdup_printf("%d", i - 1);
                 widget_to_add = gtk_label_new(label_text);
                 g_free(label_text);
 
@@ -134,7 +134,7 @@ void create_table(int rows, int cols){
 
                 gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget_to_add), "-");
                 for(int x = 0; x < rows - 1; ++x){
-                    char *text = g_strdup_printf("%d", x + 1);
+                    char *text = g_strdup_printf("%d", x);
                     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget_to_add), text);
                 }
 
@@ -233,7 +233,7 @@ void on_btn_evaluar_clicked(GtkWidget *button){
 
     // Array de char (1 solo caracter) de los simbolos.
     char *Simbolos;
-    Simbolos = malloc(global_simbolos * sizeof(char));
+    Simbolos = malloc(global_simbolos * sizeof(char*));
     for(int i = 0; i < global_simbolos; ++i){
         const gchar *simbolo = gtk_entry_get_text(entry_simbolos_array[i]);
         Simbolos[i] = simbolo[0];
@@ -247,14 +247,14 @@ void on_btn_evaluar_clicked(GtkWidget *button){
         const gchar *temp_text = gtk_entry_get_text(entry_estados_array[i]);
         if(strlen(temp_text) == 0){
             char index_str[3];
-            sprintf(index_str, "%d", i + 1);
+            sprintf(index_str, "%d", i);
             Estados[i] = strdup(index_str);
         } else {
             Estados[i] = strdup(temp_text);
         }
     }
 
-    deploy_window_output( Table,  Accept,  Simbolos,  Estados);
+    deploy_window_output(Table, Accept, Simbolos, Estados);
 
     if (gtk_widget_is_toplevel(window_table)) {
         gtk_widget_hide(window_table);

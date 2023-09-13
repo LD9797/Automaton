@@ -86,30 +86,29 @@ int DFA_driver(char *string, struct Registry registry[], int *registryCount) {
     }
 }
 
-int code(char c);
-char **my_DFA_driver (int **Table, int *Accept, int(*code)(char c), const char *string, int state, char **Estados);
+int code(char c, char *simbolos);
 
-int code(char c)
+int code(char c, char *simbolos)
 {
-    if (c == 'A') return 0;
-    if (c == 'T') return 1;
-    if (c == 'C') return 2;
-    if (c == 'G') return 3;
-    return 4;
+    for(int i = 0; i < strlen(simbolos); i++){
+        if (c == simbolos[i]) return i;
+    }
+    return -1;
 }
 
-char **my_DFA_driver (int **Table, int *Accept, int(*code)(char c), const char *string, int state, char **Estados) {
+char **my_DFA_driver (int **Table,
+                      char *simbolos,
+                      const char *string, char **Estados) {
     // TODO -> Transiciones invalidas y todo eso.
 
-    int k;
-    k = state;
+    int k = 0; // Estado inicial siempre va a ser 0.
 
-    char **transiciones = malloc(strlen(string) + 1  * sizeof(char *));
+    char **transiciones = malloc((strlen(string) + 1) * sizeof(char *));
 
     for (int i = 0; i < strlen(string) ; ++i) {
         char buffer[50];
         char simbolo = string[i];
-        int from_code = code(simbolo);
+        int from_code = code(simbolo, simbolos);
 
         snprintf(buffer, sizeof(buffer), "(%s) %d |%c| -> ", Estados[k], k, simbolo);
         transiciones[i] = strdup(buffer);
@@ -126,27 +125,40 @@ char **my_DFA_driver (int **Table, int *Accept, int(*code)(char c), const char *
     return transiciones;
 }
 
-int something(int argc, char *argv[]) {
+int nose_test_DFA(int argc, char *argv[]) {
 
-    int tabla[4][4] = { {3,1,2,0},
-                        {0,1,2,0},
-                        {3,1,3,0},
-                        {3,3,3,3}};
+    int tabla[1][1] = {{0}};
+
+    //int tabla[4][4] = { {3,1,2,0},
+     //                   {0,1,2,0},
+      //                  {3,1,3,0},
+       //                 {3,3,3,3}};
 
     int **ptr_tabla = malloc(4 * sizeof(int *));
-    for(int i = 0; i < 4; ++i) {
+    for(int i = 0; i < 1; ++i) {
         ptr_tabla[i] = tabla[i];
     }
 
-    int accept[4] = {1, 1, 1, 0};
-    char *estados[] = {"Inicio", "Arriba", "Centro", "Sink"};
-    char hilera[] = "CAT";
+    // int accept[4] = {1, 1, 1, 0};
+    int accept[1] = {0};
+    // char *estados[] = {"Inicio", "Arriba", "Centro", "Sink"};
 
-    char **transiciones = my_DFA_driver(ptr_tabla, accept, code, hilera, 0, estados);
+    char *estados[] = {"Inicio"};
 
+    const char hilera[] = "AAAA";
+    // char simbolos[] = { 'A', 'T', 'C', 'G'};
+
+    char simbolos[] = { 'A'};
+
+    char **transiciones = my_DFA_driver(ptr_tabla, simbolos, hilera, estados);
+
+
+    //my_DFA_driver(ptr_tabla, simbolos, "CATATATAGCGCT", estados);
+    //my_DFA_driver(ptr_tabla, simbolos, "CATATATATAGCTACACA", estados);
 
     char *ultimo_estado = transiciones[strlen(hilera)];
     char final = ultimo_estado[strlen(ultimo_estado) - 1];
     printf("\nUltimo estado: %c\n", final);
-    printf("Acepto 1 O Rechazo 0? %d", accept[final - '0']);
+    printf("Acepto 1 O Rechazo 0? %d", accept[final - '0' - 1]);
+
 }

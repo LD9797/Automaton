@@ -1,4 +1,5 @@
 #include "../Headers/output.h"
+#include "../Headers/dfadriver.h"
 
 /// GTK WIDGETS
 
@@ -98,14 +99,30 @@ void add_text_from_input_to_text_view() {
     gtk_entry_set_text(entry, "");
 }
 
+int **global_Table;
+int *global_Accept;
+char *global_Simbolos;
+char **global_Estados;
+
+
 void call_DFA(){
-
     const gchar *hilera = gtk_entry_get_text(entry);
-
-
+    printf( "%s\n", hilera);
+    char **transiciones = my_DFA_driver(global_Table, global_Simbolos, hilera, global_Estados);
+    char *ultimo_estado = transiciones[strlen(hilera)];
+    char final = ultimo_estado[strlen(ultimo_estado) - 1];
+    int estado_final_int = final - '0';
+    printf("\nUltimo estado: %c\n", final);
+    printf("Acepto 1 O Rechazo 0? %d\n", global_Accept[estado_final_int]);
 }
 
+
 void deploy_window_output(int **Table, int *Accept, char *Simbolos, char **Estados){
+    global_Table = Table;
+    global_Accept = Accept;
+    global_Simbolos = Simbolos;
+    global_Estados = Estados;
+
     builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "layout.glade", NULL);
     window = GTK_WIDGET(gtk_builder_get_object(builder, "screen"));
@@ -125,7 +142,7 @@ void deploy_window_output(int **Table, int *Accept, char *Simbolos, char **Estad
     g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), NULL);
     g_signal_connect(menu_item_clean, "activate", G_CALLBACK(clear_text_view), NULL);
     g_signal_connect(entry, "activate", G_CALLBACK(add_text_from_input_to_text_view), NULL);
-    g_signal_connect(include_button, "clicked", G_CALLBACK(add_text_from_input_to_text_view), NULL);
+    g_signal_connect(include_button, "clicked", G_CALLBACK(call_DFA), NULL);
 
     // Init buffer
     GtkTextIter iter;
