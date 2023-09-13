@@ -98,9 +98,14 @@ void add_text_from_input_to_text_view() {
     gtk_entry_set_text(entry, "");
 }
 
-int main(int argc, char *argv[]) {
-    // Initialize window
-    gtk_init(&argc, &argv);
+void call_DFA(){
+
+    const gchar *hilera = gtk_entry_get_text(entry);
+
+
+}
+
+void deploy_window_output(int **Table, int *Accept, char *Simbolos, char **Estados){
     builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "layout.glade", NULL);
     window = GTK_WIDGET(gtk_builder_get_object(builder, "screen"));
@@ -133,9 +138,6 @@ int main(int argc, char *argv[]) {
     gtk_text_view_set_editable(text_view, false);
     gtk_text_view_set_cursor_visible(text_view, false);
     gtk_widget_set_sensitive(GTK_WIDGET(text_view), false);
-    
-    gtk_widget_show(window);
-    gtk_main();
 
-    return 0;
+    gtk_widget_show(window);
 }

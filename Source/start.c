@@ -8,7 +8,7 @@
 #include <gtk/gtkx.h>
 #include <math.h>
 #include <ctype.h>
-#include "table.h"
+#include "../Headers/table.h"
 
 GtkWidget *window_start;
 GtkWidget *btn_info_estados;

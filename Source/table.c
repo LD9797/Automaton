@@ -7,7 +7,8 @@
 #include <gtk/gtkx.h>
 #include <math.h>
 #include <ctype.h>
-#include "table.h"
+#include "../Headers/table.h"
+#include "../Headers/output.h"
 #include <string.h>
 
 
@@ -253,5 +254,9 @@ void on_btn_evaluar_clicked(GtkWidget *button){
         }
     }
 
-    g_print("DONE");
+    deploy_window_output( Table,  Accept,  Simbolos,  Estados);
+
+    if (gtk_widget_is_toplevel(window_table)) {
+        gtk_widget_hide(window_table);
+    }
 }
