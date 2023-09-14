@@ -12,9 +12,9 @@ add_definitions(${GTK3_CFLAGS_OTHER})
 
 include_directories(/usr/include/gtk-3.0)
 
+file(GLOB SOURCES "Source/*.c" "Headers/*.h")
 add_executable(Automaton
-        start.c
-        table.c
-        table.h)
+        ${SOURCES}
+        )
 
 target_link_libraries(Automaton ${GTK3_LIBRARIES} -lm -export-dynamic)
