@@ -11,10 +11,6 @@ int tableMappings[MAX_STATES][MAX_SYMBOLS];
 
 /// HELPER FUNCTIONS
 
-size_t numStates(char** states) {
-    return sizeof(states) / sizeof(states[0]);
-}
-
 int symbolToInt(char symbol, const char* symbols) {
     for (int i = 0; i < strlen(symbols); i++) {
         if (symbols[i] == symbol) {
@@ -27,31 +23,28 @@ int symbolToInt(char symbol, const char* symbols) {
 
 /// DFA DRIVER
 
-void init_DFA_driver(int **table, int *accept, char** states, char *symbols) {
-    size_t totalStates = numStates(states);
-    size_t totalSymbols = strlen(symbols);
-
-    for(int i = 0; i < totalSymbols; i++) {
+void init_DFA_driver(int **table, int *accept, char **states, char *symbols, int num_simbolos, int num_estados) {
+    for(int i = 0; i < num_simbolos; i++) {
         originalSymbols[i] = symbols[i];
     }
 
-    for(int i = 0; i < totalStates; i++) {
+    for(int i = 0; i < num_estados; i++) {
         acceptStates[i] = accept[i];
     }
 
-    for(int i = 0; i < totalStates; i++) {
-        for (int j = 0; j < totalSymbols; j++) {
-            tableMappings[i][j] = table[i][j] - 1;
+    for(int i = 0; i < num_estados; i++) {
+        for (int j = 0; j < num_simbolos; j++) {
+            tableMappings[i][j] = table[i][j];
         }
     }
 }
 
-int DFA_driver(char *string, struct Registry registry[], int *registryCount) {
+int DFA_driver(const char *hilera, struct Registry registry[], int *registryCount) {
     int k = START_STATE;
-    int inputInt[strlen(string) + 1];
+    int inputInt[strlen(hilera) + 1];
 
-    for (int i = 0; string[i]; i++) {
-        char currentSymbol = string[i];
+    for (int i = 0; hilera[i]; i++) {
+        char currentSymbol = hilera[i];
         inputInt[i] = symbolToInt(currentSymbol, originalSymbols);
 
         if (inputInt[i] == INVALID_CHARACTER) {
@@ -64,17 +57,21 @@ int DFA_driver(char *string, struct Registry registry[], int *registryCount) {
         }
     }
 
-    inputInt[strlen(string)] = FINAL_CHARACTER;
+    inputInt[strlen(hilera)] = FINAL_CHARACTER;
     for (int i = 0; inputInt[i] != FINAL_CHARACTER; i++) {
         int symbolIndex = inputInt[i];
-        k = tableMappings[k][symbolIndex];
 
         registry[*registryCount].step = i;
         registry[*registryCount].state = k;
-        registry[*registryCount].symbol = originalSymbols[i];
+        registry[*registryCount].symbol = originalSymbols[symbolIndex];
         (*registryCount)++;
 
-        if (k == FINAL_CHARACTER) {
+        k = tableMappings[k][symbolIndex];
+        if (k == FINAL_CHARACTER || inputInt[i+1] == FINAL_CHARACTER) {
+            registry[*registryCount].step = i + 1;
+            registry[*registryCount].state = k;
+            registry[*registryCount].symbol = ' ';
+            (*registryCount)++;
             break;
         }
     }
@@ -86,15 +83,8 @@ int DFA_driver(char *string, struct Registry registry[], int *registryCount) {
     }
 }
 
-int code(char c, char *simbolos);
 
-int code(char c, char *simbolos)
-{
-    for(int i = 0; i < strlen(simbolos); i++){
-        if (c == simbolos[i]) return i;
-    }
-    return -1;
-}
+
 
 char **my_DFA_driver (int **Table,
                       char *simbolos,
@@ -106,9 +96,9 @@ char **my_DFA_driver (int **Table,
     char **transiciones = malloc((strlen(string)) * sizeof(char *));
 
     for (int i = 0; i < strlen(string) ; ++i) {
-        char buffer[50];
+        char buffer[1000];
         char simbolo = string[i];
-        int from_code = code(simbolo, simbolos);
+        int from_code = symbolToInt(simbolo, simbolos);
 
         snprintf(buffer, sizeof(buffer), "(%s) %d |%c| -> ", Estados[k], k, simbolo);
         transiciones[i] = strdup(buffer);
