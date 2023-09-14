@@ -20,6 +20,9 @@ const int DEFAULT_WINDOW_WIDTH = 800;
 const int DEFAULT_WINDOW_HEIGHT = 600;
 const int WARNING_POPOVER_INTERVAL = 3;
 
+int num_simbolos;
+int num_estados;
+
 /// PUBLIC METHODS
 
 void on_window_destroy(GtkWidget *widget, gpointer user_data) {
@@ -110,7 +113,19 @@ GtkWidget *table_window = NULL;
 void call_DFA(){
     const gchar *hilera = gtk_entry_get_text(entry);
     printf( "%s\n", hilera);
-    char **transiciones = my_DFA_driver(global_Table, global_Simbolos, hilera, global_Estados);
+
+    init_DFA_driver(global_Table, global_Accept, global_Estados, global_Simbolos, num_simbolos, num_estados);
+    struct Registry registry[strlen(hilera) + 1];
+    int registryCount = 0;
+    int result = DFA_driver(hilera, registry, &registryCount);
+
+    for (int i = 0; i < registryCount; i++) {
+        char *string;
+        sprintf(string, "Step %d: State (%s) %d, Symbol %c\n", registry[i].step, global_Estados[registry[i].state], registry[i].state, registry[i].symbol);
+        add_green_text_to_text_view(string);
+
+    }
+    //char **transiciones = my_DFA_driver(global_Table, global_Simbolos, hilera, global_Estados);
     //char *ultimo_estado = transiciones[strlen(hilera)];
     //char final = ultimo_estado[strlen(ultimo_estado) - 1];
     //int estado_final_int = final - '0';
@@ -124,16 +139,19 @@ void on_back_button_clicked(){
     }
 
     if (table_window) {
-        gtk_widget_show(table_window);
+        gtk_widget_set_sensitive(table_window, TRUE);
+        // gtk_widget_show(table_window);
     }
 }
 
-void deploy_window_output(int **Table, int *Accept, char *Simbolos, char **Estados, GtkWidget *previous_window){
+void deploy_window_output(int **Table, int *Accept, char *Simbolos, char **Estados, GtkWidget *previous_window, int global_simbolos, int global_estados){
     global_Table = Table;
     global_Accept = Accept;
     global_Simbolos = Simbolos;
     global_Estados = Estados;
     table_window = previous_window;
+    num_simbolos = global_simbolos;
+    num_estados = global_estados;
 
     builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "layout.glade", NULL);

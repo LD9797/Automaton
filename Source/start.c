@@ -68,8 +68,15 @@ void deploy_window(){
     gtk_widget_show(window_start);
   }
 
-void on_btn_continuar_clicked(GtkWidget *button) {
+void on_btn_continuar_pressed(GtkWidget *button){
     gtk_widget_set_visible(spinner_loading, TRUE);
+}
+
+void on_btn_continuar_clicked(GtkWidget *button) {
+     gtk_widget_set_visible(spinner_loading, TRUE);
+
+    GtkSpinner *spinner = GTK_SPINNER(spinner_loading);
+    gtk_spinner_start(spinner);
 
     gdouble cantidad_estados = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_estados));
     gdouble cantidad_simbolos = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_simbolos));
@@ -82,9 +89,11 @@ void on_btn_continuar_clicked(GtkWidget *button) {
 
     deploy_window_table(estados_int, simbolos_int, window_start);
 
-    if (gtk_widget_is_toplevel(window_start)) {
+    gtk_spinner_stop(spinner);
+
+   if (gtk_widget_is_toplevel(window_start)) {
         gtk_widget_hide(window_start);
-    }
+   }
 }
 
 void on_btn_info_estados_clicked(GtkWidget *button) {

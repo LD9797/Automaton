@@ -20,6 +20,8 @@ GtkComboBoxText ***combo_boxes_array;
 GtkEntry **entry_simbolos_array;
 GtkEntry **entry_estados_array;
 GtkCheckButton **check_button_array;
+GtkWidget *btn_info_table;
+GtkWidget *info_table;
 
 int global_estados;
 int global_simbolos;
@@ -39,6 +41,9 @@ void deploy_window_table(int estados, int simbolos, GtkWidget *previous_window){
 
     g_signal_connect(window_table, "destroy", G_CALLBACK(gtk_main_quit), NULL);
     gtk_builder_connect_signals(builder, NULL);
+
+    btn_info_table = GTK_WIDGET(gtk_builder_get_object(builder, "btn_info_estados"));
+    info_table = GTK_WIDGET(gtk_builder_get_object(builder, "info_table"));
 
     global_estados = estados;
     global_simbolos = simbolos;
@@ -207,15 +212,19 @@ void free_global_combo_boxes_array(int rows) {
 
 
 void on_btn_evaluar_clicked(GtkWidget *button){
-    // TODO Validaciones
-    // Tabla de transiciones, cuando hay un 0 es que no hay transicion.
+    // TODO Validaciones de simbolos vacios
     int **Table;
     Table = malloc(global_estados * sizeof(int *));
     for(int i = 0; i < global_estados; ++i){
         Table[i] = malloc(global_simbolos * sizeof(int));
         for(int j = 0; j < global_simbolos; ++j){
             gchar *text = gtk_combo_box_text_get_active_text(combo_boxes_array[i][j]);
-            int number = atoi(text);
+            int number;
+            if (g_strcmp0(text, "-") == 0){
+                number = -1;
+            } else {
+                number = atoi(text);
+            }
             Table[i][j] = number;
         }
     }
@@ -254,9 +263,24 @@ void on_btn_evaluar_clicked(GtkWidget *button){
         }
     }
 
-    deploy_window_output(Table, Accept, Simbolos, Estados, window_table);
+    deploy_window_output(Table, Accept, Simbolos, Estados, window_table, global_simbolos, global_estados);
 
     if (gtk_widget_is_toplevel(window_table)) {
-        gtk_widget_hide(window_table);
+        gtk_widget_set_sensitive(window_table, FALSE);
+        // gtk_widget_hide(window_table);
+    }
+}
+
+
+void on_btn_info_table_clicked(GtkWidget *button) {
+    if (info_table != NULL) {
+        gtk_dialog_run(GTK_DIALOG(info_table));
+        gtk_widget_hide(info_table);
+    }
+}
+
+void on_btn_ok_clicked(GtkWidget *button) {
+    if (info_table != NULL) {
+        gtk_widget_hide(info_table);
     }
 }

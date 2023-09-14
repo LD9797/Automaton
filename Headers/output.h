@@ -29,6 +29,6 @@ extern const int WARNING_POPOVER_INTERVAL;
 
 void add_green_text_to_text_view(const gchar *text);
 
-void deploy_window_output(int **Table, int *Accept, char *Simbolos, char **Estados, GtkWidget *previous_window);
+void deploy_window_output(int **Table, int *Accept, char *Simbolos, char **Estados, GtkWidget *previous_window, int global_simbolos, int global_estados);
 
 #endif //AUTOMATON_OUTPUT_H
