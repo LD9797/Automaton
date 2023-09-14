@@ -8,9 +8,11 @@
 #include <gtk/gtkx.h>
 #include <math.h>
 #include <ctype.h>
-#include "table.h"
+#include "../Headers/table.h"
 
 GtkWidget *window_start;
+GtkWidget *loading;
+GtkWidget *spinner_loading;
 GtkWidget *btn_info_estados;
 GtkWidget *info_estados;
 GtkWidget *btn_dialog_1;
@@ -21,6 +23,7 @@ GtkWidget *spn_estados;
 GtkWidget *spn_simbolos;
 GtkWidget *btn_exit;
 GtkWidget *btn_continuar;
+
 
 void deploy_window();
 
@@ -59,11 +62,15 @@ void deploy_window(){
 
     btn_continuar = GTK_WIDGET(gtk_builder_get_object(builder, "btn_continuar"));
     btn_exit = GTK_WIDGET(gtk_builder_get_object(builder, "btn_exit"));
-    
+
+    spinner_loading = GTK_WIDGET(gtk_builder_get_object(builder, "spinner_loading"));
+
     gtk_widget_show(window_start);
-}
+  }
 
 void on_btn_continuar_clicked(GtkWidget *button) {
+    gtk_widget_set_visible(spinner_loading, TRUE);
+
     gdouble cantidad_estados = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_estados));
     gdouble cantidad_simbolos = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_simbolos));
 

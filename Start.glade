@@ -213,6 +213,18 @@
             <property name="y">10</property>
           </packing>
         </child>
+        <child>
+          <object class="GtkSpinner" id="spinner_loading">
+            <property name="width-request">100</property>
+            <property name="height-request">80</property>
+            <property name="can-focus">False</property>
+            <property name="active">True</property>
+          </object>
+          <packing>
+            <property name="x">403</property>
+            <property name="y">404</property>
+          </packing>
+        </child>
       </object>
     </child>
   </object>
