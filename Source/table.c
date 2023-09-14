@@ -254,7 +254,7 @@ void on_btn_evaluar_clicked(GtkWidget *button){
         }
     }
 
-    deploy_window_output(Table, Accept, Simbolos, Estados);
+    deploy_window_output(Table, Accept, Simbolos, Estados, window_table);
 
     if (gtk_widget_is_toplevel(window_table)) {
         gtk_widget_hide(window_table);

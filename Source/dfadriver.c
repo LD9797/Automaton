@@ -103,7 +103,7 @@ char **my_DFA_driver (int **Table,
 
     int k = 0; // Estado inicial siempre va a ser 0.
 
-    char **transiciones = malloc((strlen(string) + 1) * sizeof(char *));
+    char **transiciones = malloc((strlen(string)) * sizeof(char *));
 
     for (int i = 0; i < strlen(string) ; ++i) {
         char buffer[50];

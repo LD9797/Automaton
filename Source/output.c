@@ -11,6 +11,7 @@ GtkBuilder *builder;
 GtkButton *menu_button;
 GtkTextView *text_view;
 GtkButton *include_button;
+GtkButton *back_button;
 GtkMenuItem *menu_item_clean;
 
 /// CONSTANTS
@@ -103,25 +104,36 @@ int **global_Table;
 int *global_Accept;
 char *global_Simbolos;
 char **global_Estados;
+GtkWidget *table_window = NULL;
 
 
 void call_DFA(){
     const gchar *hilera = gtk_entry_get_text(entry);
     printf( "%s\n", hilera);
     char **transiciones = my_DFA_driver(global_Table, global_Simbolos, hilera, global_Estados);
-    char *ultimo_estado = transiciones[strlen(hilera)];
-    char final = ultimo_estado[strlen(ultimo_estado) - 1];
-    int estado_final_int = final - '0';
-    printf("\nUltimo estado: %c\n", final);
-    printf("Acepto 1 O Rechazo 0? %d\n", global_Accept[estado_final_int]);
+    //char *ultimo_estado = transiciones[strlen(hilera)];
+    //char final = ultimo_estado[strlen(ultimo_estado) - 1];
+    //int estado_final_int = final - '0';
+    //printf("\nUltimo estado: %c\n", final);
+    //printf("Acepto 1 O Rechazo 0? %d\n", global_Accept[estado_final_int]);
 }
 
+void on_back_button_clicked(){
+    if (gtk_widget_is_toplevel(window)) {
+        gtk_widget_hide(window);
+    }
 
-void deploy_window_output(int **Table, int *Accept, char *Simbolos, char **Estados){
+    if (table_window) {
+        gtk_widget_show(table_window);
+    }
+}
+
+void deploy_window_output(int **Table, int *Accept, char *Simbolos, char **Estados, GtkWidget *previous_window){
     global_Table = Table;
     global_Accept = Accept;
     global_Simbolos = Simbolos;
     global_Estados = Estados;
+    table_window = previous_window;
 
     builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "layout.glade", NULL);
@@ -136,6 +148,7 @@ void deploy_window_output(int **Table, int *Accept, char *Simbolos, char **Estad
     menu_button = GTK_BUTTON(gtk_builder_get_object(builder, "open_menu_button"));
     include_button = GTK_BUTTON(gtk_builder_get_object(builder, "include_button"));
     menu_item_clean = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menu_item_clean"));
+    back_button = GTK_BUTTON(gtk_builder_get_object(builder, "back_button"));
 
     // Connect signals
     g_signal_connect(menu_button, "clicked", G_CALLBACK(show_menu), NULL);
@@ -143,6 +156,7 @@ void deploy_window_output(int **Table, int *Accept, char *Simbolos, char **Estad
     g_signal_connect(menu_item_clean, "activate", G_CALLBACK(clear_text_view), NULL);
     g_signal_connect(entry, "activate", G_CALLBACK(add_text_from_input_to_text_view), NULL);
     g_signal_connect(include_button, "clicked", G_CALLBACK(call_DFA), NULL);
+    g_signal_connect(back_button, "clicked", G_CALLBACK(on_back_button_clicked), NULL);
 
     // Init buffer
     GtkTextIter iter;
