@@ -1,6 +1,15 @@
 #include "../Headers/output.h"
 #include "../Headers/dfadriver.h"
 
+/// DFA MODEL
+
+int num_estados;
+int num_simbolos;
+int **global_Table;
+int *global_Accept;
+char *global_Simbolos;
+char **global_Estados;
+
 /// GTK WIDGETS
 
 GtkMenu *menu;
@@ -9,19 +18,18 @@ GtkWidget *window;
 GtkWidget *popover;
 GtkBuilder *builder;
 GtkButton *menu_button;
+GtkButton *back_button;
 GtkTextView *text_view;
 GtkButton *include_button;
-GtkButton *back_button;
 GtkMenuItem *menu_item_clean;
+GtkWidget *table_window = NULL;
+GtkCheckMenuItem *check_collapse;
 
 /// CONSTANTS
 
 const int DEFAULT_WINDOW_WIDTH = 800;
 const int DEFAULT_WINDOW_HEIGHT = 600;
 const int WARNING_POPOVER_INTERVAL = 3;
-
-int num_simbolos;
-int num_estados;
 
 /// PUBLIC METHODS
 
@@ -40,14 +48,14 @@ void clear_text_view() {
     gtk_widget_grab_focus(GTK_WIDGET(entry));
 }
 
-void add_text_with_color(const gchar *text, GdkRGBA color) {
+void add_text_with_color(const gchar *text, GdkRGBA color, bool new_line) {
     // Get the end iterator of the buffer
     GtkTextIter iter;
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(text_view);
     gtk_text_buffer_get_end_iter(buffer, &iter);
 
     // Append a newline if the buffer is not empty
-    if (!gtk_text_iter_is_start(&iter))
+    if (!gtk_text_iter_is_start(&iter) && new_line)
         gtk_text_buffer_insert(buffer, &iter, "\n", -1);
 
     // Create a new text tag for the Consolas font, color and font size.
@@ -62,9 +70,30 @@ void add_text_with_color(const gchar *text, GdkRGBA color) {
     gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(text_view), gtk_text_buffer_get_insert(buffer), 0.0, FALSE, 0.0, 1.0);
 }
 
-void add_green_text_to_text_view(const gchar *text) {
+void add_black_text_to_text_view(const gchar *text, bool newline) {
+    GdkRGBA color = {0.0, 0.0, 0.0, 1.0};
+    add_text_with_color(text, color, newline);
+    gtk_entry_set_text(entry, "");
+    gtk_widget_grab_focus(GTK_WIDGET(entry));
+}
+
+void add_blue_text_to_text_view(const gchar *text, bool newline) {
+    GdkRGBA color = {0.0, 0.0, 1.0, 1.0};
+    add_text_with_color(text, color, newline);
+    gtk_entry_set_text(entry, "");
+    gtk_widget_grab_focus(GTK_WIDGET(entry));
+}
+
+void add_green_text_to_text_view(const gchar *text, bool newline) {
     GdkRGBA color = {0.0, 1.0, 0.0, 1.0};
-    add_text_with_color(text, color);
+    add_text_with_color(text, color, newline);
+    gtk_entry_set_text(entry, "");
+    gtk_widget_grab_focus(GTK_WIDGET(entry));
+}
+
+void add_red_text_to_text_view(const gchar *text, bool newline) {
+    GdkRGBA color = {1.0, 0.0, 0.0, 1.0};
+    add_text_with_color(text, color, newline);
     gtk_entry_set_text(entry, "");
     gtk_widget_grab_focus(GTK_WIDGET(entry));
 }
@@ -79,15 +108,15 @@ bool is_whitespace(const gchar *text) {
     return true;
 }
 
-void add_text_from_input_to_text_view() {
-    const gchar *text = gtk_entry_get_text(entry);
-    
+bool add_text_from_input_to_text_view(const gchar *text) {
+    bool text_exists = false;
+
     if (!is_whitespace(text)) {
-        GdkRGBA color = {0.0, 0.0, 1.0, 1.0};
-        
-        const gchar *trim_text = g_strconcat("\u2B95 Hilera ingresada: ", text, NULL);
-        add_text_with_color(trim_text, color);
+        const gchar *newtext = g_strconcat("\U0001F4DD Hilera ingresada: ", text, NULL);
+        add_black_text_to_text_view(newtext, true);
         gtk_widget_grab_focus(GTK_WIDGET(entry));
+
+        text_exists = true;
     } else {
         gtk_entry_set_text(entry, "");
         gtk_widget_grab_focus(GTK_WIDGET(entry));
@@ -101,36 +130,57 @@ void add_text_from_input_to_text_view() {
     }
     
     gtk_entry_set_text(entry, "");
+    return text_exists;
 }
 
-int **global_Table;
-int *global_Accept;
-char *global_Simbolos;
-char **global_Estados;
-GtkWidget *table_window = NULL;
-
-
 void call_DFA(){
-    const gchar *hilera = gtk_entry_get_text(entry);
-    printf( "%s\n", hilera);
+    const gchar *hilera = g_strdup(gtk_entry_get_text(entry));
+    bool must_continue = add_text_from_input_to_text_view(hilera);
 
-    init_DFA_driver(global_Table, global_Accept, global_Estados, global_Simbolos, num_simbolos, num_estados);
-    struct Registry registry[strlen(hilera) + 1];
-    int registryCount = 0;
-    int result = DFA_driver(hilera, registry, &registryCount);
+    if (must_continue) {
+        gboolean collapse_results = gtk_check_menu_item_get_active(check_collapse);
+        init_DFA_driver(global_Table, global_Accept, global_Estados, global_Simbolos, num_simbolos, num_estados);
+        struct Registry registry[strlen(hilera) + 1];
+        int registryCount = 0;
+        int result = DFA_driver(hilera, registry, &registryCount);
 
-    for (int i = 0; i < registryCount; i++) {
-        char *string;
-        sprintf(string, "Step %d: State (%s) %d, Symbol %c\n", registry[i].step, global_Estados[registry[i].state], registry[i].state, registry[i].symbol);
-        add_green_text_to_text_view(string);
+        add_blue_text_to_text_view("\n\xf0\x9f\x9a\xa7 Procesado de la hilera:", false);
+        if (registryCount > 0) {
+            if (result == INVALID_CHARACTER) {
+                char string[100];
+                sprintf(string, " \u2B95 FINAL: Símbolo inválido encontrado durante el preprocesado de la hilera: %c", registry[0].symbol);
+                add_blue_text_to_text_view((const gchar *) string, !collapse_results);
+            } else {
+                for (int i = 0; i < registryCount; i++) {
+                    char string[100];
 
+                    if (i == 0) {
+                        sprintf(string, " \u2B95 INICIO: Estado #%d (%s)", registry[i].state, global_Estados[registry[i].state]);
+                    } else if (registry[i].state == FINAL_CHARACTER) {
+                        sprintf(string, " \u2B95 FINAL: Estado #%d (%s), Símbolo %c", registry[i-1].state, global_Estados[registry[i-1].state], registry[i].symbol);
+                    } else {
+                        if (i + 1 >= registryCount) {
+                            sprintf(string, " \u2B95 FINAL: Estado #%d (%s), Símbolo %c", registry[i].state, global_Estados[registry[i].state], registry[i].symbol);
+                        } else {
+                            sprintf(string, " \u2B95 PASO #%d: Estado #%d (%s), Símbolo %c", registry[i].step, registry[i].state, global_Estados[registry[i].state], registry[i].symbol);
+                        }
+                    }
+
+                    add_blue_text_to_text_view((const gchar *) string, !collapse_results);
+                }
+
+            }
+
+        } else {
+            add_blue_text_to_text_view(" No hay registros de cambios de estado.", !collapse_results);
+        }
+
+        if (result == 1) {
+            add_green_text_to_text_view("\U00002705 La hilera se acepta.\n", true);
+        } else {
+            add_red_text_to_text_view("\U0000274C La hilera se rechaza.\n", true);
+        }
     }
-    //char **transiciones = my_DFA_driver(global_Table, global_Simbolos, hilera, global_Estados);
-    //char *ultimo_estado = transiciones[strlen(hilera)];
-    //char final = ultimo_estado[strlen(ultimo_estado) - 1];
-    //int estado_final_int = final - '0';
-    //printf("\nUltimo estado: %c\n", final);
-    //printf("Acepto 1 O Rechazo 0? %d\n", global_Accept[estado_final_int]);
 }
 
 void on_back_button_clicked(){
@@ -140,7 +190,6 @@ void on_back_button_clicked(){
 
     if (table_window) {
         gtk_widget_set_sensitive(table_window, TRUE);
-        // gtk_widget_show(table_window);
     }
 }
 
@@ -163,17 +212,18 @@ void deploy_window_output(int **Table, int *Accept, char *Simbolos, char **Estad
     menu = GTK_MENU(gtk_builder_get_object(builder, "menu_options"));
     entry = GTK_ENTRY(gtk_builder_get_object(builder, "string_input"));
     text_view = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "text_view"));
+    back_button = GTK_BUTTON(gtk_builder_get_object(builder, "back_button"));
     menu_button = GTK_BUTTON(gtk_builder_get_object(builder, "open_menu_button"));
     include_button = GTK_BUTTON(gtk_builder_get_object(builder, "include_button"));
     menu_item_clean = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menu_item_clean"));
-    back_button = GTK_BUTTON(gtk_builder_get_object(builder, "back_button"));
+    check_collapse = GTK_CHECK_MENU_ITEM(gtk_builder_get_object(builder, "menuitem_collapseprocess"));
 
     // Connect signals
+    g_signal_connect(entry, "activate", G_CALLBACK(call_DFA), NULL);
     g_signal_connect(menu_button, "clicked", G_CALLBACK(show_menu), NULL);
+    g_signal_connect(include_button, "clicked", G_CALLBACK(call_DFA), NULL);
     g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), NULL);
     g_signal_connect(menu_item_clean, "activate", G_CALLBACK(clear_text_view), NULL);
-    g_signal_connect(entry, "activate", G_CALLBACK(add_text_from_input_to_text_view), NULL);
-    g_signal_connect(include_button, "clicked", G_CALLBACK(call_DFA), NULL);
     g_signal_connect(back_button, "clicked", G_CALLBACK(on_back_button_clicked), NULL);
 
     // Init buffer

@@ -17,6 +17,16 @@
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <child>
+      <object class="GtkCheckMenuItem" id="menuitem_collapseprocess">
+        <property name="name">menuitem_collapseprocess</property>
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">En línea</property>
+        <property name="use-underline">True</property>
+        <property name="active">True</property>
+      </object>
+    </child>
+    <child>
       <object class="GtkImageMenuItem" id="menu_item_clean">
         <property name="label" translatable="yes">Refrescar</property>
         <property name="name">menu_item_clean</property>

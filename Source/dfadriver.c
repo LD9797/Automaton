@@ -58,20 +58,22 @@ int DFA_driver(const char *hilera, struct Registry registry[], int *registryCoun
     }
 
     inputInt[strlen(hilera)] = FINAL_CHARACTER;
+
+    registry[*registryCount].step = 0;
+    registry[*registryCount].state = k;
+    registry[*registryCount].symbol = ' ';
+    (*registryCount)++;
+
     for (int i = 0; inputInt[i] != FINAL_CHARACTER; i++) {
         int symbolIndex = inputInt[i];
+        k = tableMappings[k][symbolIndex];
 
-        registry[*registryCount].step = i;
+        registry[*registryCount].step = i + 1;
         registry[*registryCount].state = k;
         registry[*registryCount].symbol = originalSymbols[symbolIndex];
         (*registryCount)++;
 
-        k = tableMappings[k][symbolIndex];
-        if (k == FINAL_CHARACTER || inputInt[i+1] == FINAL_CHARACTER) {
-            registry[*registryCount].step = i + 1;
-            registry[*registryCount].state = k;
-            registry[*registryCount].symbol = ' ';
-            (*registryCount)++;
+        if (k == FINAL_CHARACTER) {
             break;
         }
     }
