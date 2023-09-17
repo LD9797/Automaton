@@ -48,9 +48,6 @@ void deploy_window_table(int estados, int simbolos, GtkWidget *previous_window){
     global_estados = estados;
     global_simbolos = simbolos;
 
-    g_strdup_printf("Recibido estados: %d\n", estados);
-    g_strdup_printf("Recibido simbolos %d\n", simbolos);
-
     scrolled_window = gtk_builder_get_object(builder, "Scrolled1");
     grid = gtk_grid_new();
     create_table(estados + 1, simbolos + 1);
@@ -62,8 +59,6 @@ void deploy_window_table(int estados, int simbolos, GtkWidget *previous_window){
 }
 
 void create_table(int rows, int cols){
-   // gtk_widget_set_hexpand(grid, TRUE);
-   // gtk_widget_set_vexpand(grid, TRUE);
     combo_boxes_array = (GtkComboBoxText ***) (GtkComboBox ***) malloc(rows * sizeof(GtkComboBox **));
     entry_simbolos_array = (GtkEntry **)malloc(cols * sizeof(GtkEntry *));
     entry_estados_array = (GtkEntry **)malloc(rows * sizeof(GtkEntry *));
@@ -124,16 +119,13 @@ void create_table(int rows, int cols){
                 widget_to_add = gtk_label_new(label_text);
                 g_free(label_text);
 
-                gtk_widget_set_size_request(widget_to_add, 100, - 1);  // 100 is the minimum width
+                gtk_widget_set_size_request(widget_to_add, 100, - 1);
             }
 
             // Combo boxes
             else if (j > 2 || i == 1) {
 
                 widget_to_add = gtk_combo_box_text_new();
-
-                // gtk_widget_set_hexpand(widget_to_add, TRUE);
-                // gtk_widget_set_vexpand(widget_to_add, TRUE);
 
                 gtk_widget_set_size_request(widget_to_add, 100, 40);
 
@@ -150,12 +142,10 @@ void create_table(int rows, int cols){
                 continue;
             }
 
-            // Primera fila resaltada.
-            if (i == 1 && j >= 1) {
-                set_widget_background_color(widget_to_add, "red");
+            if ((i == 1 && j == 1) || (i == 1 && j == 2) ) {
+                set_widget_background_color(widget_to_add, "#4CAF50");
             }
 
-            // Frames negros.
             if (j >= 1){
                 set_border(widget_to_add);
             }
@@ -163,17 +153,16 @@ void create_table(int rows, int cols){
             gtk_grid_attach(GTK_GRID(grid), widget_to_add, j, i, 1, 1);
         }
     }
-    g_strdup_printf("DONE");
 }
 
 void set_border(GtkWidget *widget){
-    gchar *css_str = g_strdup_printf("* {border: 1px solid black;}");
+    gchar *css_str = g_strdup_printf("* {border: 1px solid black; border-radius: 0px;}");
     set_css(widget, css_str);
     g_free(css_str);
 }
 
 void set_widget_background_color(GtkWidget *widget, const gchar *color) {
-    gchar *css_str = g_strdup_printf("* { color: %s;}", color);
+    gchar *css_str = g_strdup_printf("* { background-color: %s; color: white;}", color);
     set_css(widget, css_str);
     g_free(css_str);
 }
@@ -212,7 +201,6 @@ void free_global_combo_boxes_array(int rows) {
 
 
 void on_btn_evaluar_clicked(GtkWidget *button){
-    // TODO Validaciones de simbolos vacios
     int **Table;
     Table = malloc(global_estados * sizeof(int *));
     for(int i = 0; i < global_estados; ++i){
@@ -267,7 +255,6 @@ void on_btn_evaluar_clicked(GtkWidget *button){
 
     if (gtk_widget_is_toplevel(window_table)) {
         gtk_widget_set_sensitive(window_table, FALSE);
-        // gtk_widget_hide(window_table);
     }
 }
 

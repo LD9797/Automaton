@@ -16,8 +16,4 @@ struct Registry {
 void init_DFA_driver(int **table, int *accept, char** states, char *symbols, int num_simbolos, int num_estados);
 int DFA_driver(const char *string, struct Registry registry[], int *registryCount);
 
-char **my_DFA_driver (int **Table,
-                      char *simbolos,
-                      const char *string, char **Estados);
-
 #endif //AUTOMATON_DFADRIVER_H

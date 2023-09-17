@@ -11,29 +11,12 @@
     <property name="width-request">800</property>
     <property name="height-request">600</property>
     <property name="can-focus">False</property>
+    <property name="resizable">False</property>
+    <property name="window-position">center</property>
     <child>
       <object class="GtkFixed" id="fixed2">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <child>
-          <object class="GtkButton" id="btn_exit_table">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
-            <signal name="clicked" handler="on_btn_exit_table_clicked" swapped="no"/>
-            <child>
-              <object class="GtkImage">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="stock">gtk-cancel</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="x">750</property>
-            <property name="y">10</property>
-          </packing>
-        </child>
         <child>
           <object class="GtkButton" id="btn_return">
             <property name="visible">True</property>
@@ -49,14 +32,14 @@
             </child>
           </object>
           <packing>
-            <property name="x">13</property>
-            <property name="y">10</property>
+            <property name="x">22</property>
+            <property name="y">555</property>
           </packing>
         </child>
         <child>
           <object class="GtkScrolledWindow" id="Scrolled1">
-            <property name="width-request">730</property>
-            <property name="height-request">450</property>
+            <property name="width-request">760</property>
+            <property name="height-request">527</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="shadow-type">in</property>
@@ -66,7 +49,7 @@
           </object>
           <packing>
             <property name="x">20</property>
-            <property name="y">63</property>
+            <property name="y">15</property>
           </packing>
         </child>
         <child>
@@ -84,8 +67,8 @@
             </child>
           </object>
           <packing>
-            <property name="x">756</property>
-            <property name="y">64</property>
+            <property name="x">742</property>
+            <property name="y">555</property>
           </packing>
         </child>
         <child>
@@ -102,7 +85,7 @@
           </object>
           <packing>
             <property name="x">350</property>
-            <property name="y">540</property>
+            <property name="y">555</property>
           </packing>
         </child>
       </object>
@@ -153,12 +136,15 @@
             <property name="can-focus">False</property>
             <property name="xpad">15</property>
             <property name="label" translatable="yes">En la tabla se pueden incluir las diferentes transiciones
-que puede realizar el autómata. Se pueden editar el 
-nombre de los estados y los símbolos que forman parte 
-del alfabeto. 
-Cuando completa la tabla puede dar click al botón "Evaluar" 
-para ingresar las hileras que desea verificar si pertenecen al
-alfabeto.</property>
+que puede realizar el autómata.
+
+El estado inicial está resaltado en verde.
+
+Se puede editar el nombre de los estados y los símbolos
+que forman parte del alfabeto. 
+
+Al completar la tabla puede dar click al botón "Evaluar" 
+para ingresar las hileras que desee verificar.</property>
           </object>
           <packing>
             <property name="expand">False</property>

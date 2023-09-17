@@ -7,11 +7,6 @@
     <property name="can-focus">False</property>
     <property name="stock">gtk-refresh</property>
   </object>
-  <object class="GtkImage" id="image2">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="stock">gtk-dialog-info</property>
-  </object>
   <object class="GtkMenu" id="menu_options">
     <property name="name">menu_options</property>
     <property name="visible">True</property>
@@ -36,24 +31,15 @@
         <property name="use-stock">False</property>
       </object>
     </child>
-    <child>
-      <object class="GtkImageMenuItem" id="menuitem_info">
-        <property name="label" translatable="yes">Información</property>
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="image">image2</property>
-        <property name="use-stock">False</property>
-      </object>
-    </child>
   </object>
   <object class="GtkApplicationWindow" id="screen">
     <property name="name">screen</property>
     <property name="can-focus">False</property>
-    <property name="title" translatable="yes">Proyecto #1</property>
+    <property name="title" translatable="yes">Automaton</property>
     <property name="resizable">False</property>
     <property name="window-position">center</property>
     <property name="urgency-hint">True</property>
-    <property name="gravity">center</property>
+    <property name="gravity">west</property>
     <child>
       <object class="GtkBox" id="screen3_main_box">
         <property name="name">screen3_main_box</property>
