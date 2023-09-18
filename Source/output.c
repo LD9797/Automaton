@@ -157,7 +157,7 @@ void call_DFA(){
                     if (i == 0) {
                         sprintf(string, " \u2B95 INICIO: Estado #%d (%s), Símbolo a procesar: %c", registry[i].state, global_Estados[registry[i].state], registry[i + 1].symbol);
                     } else if (registry[i].state == FINAL_CHARACTER) {
-                        sprintf(string, " \u2B95 FINAL: Estado #%d (%s), Símbolo a procesar: %c", registry[i-1].state, global_Estados[registry[i-1].state], registry[i].symbol);
+                        sprintf(string, " \u2B95 FINAL: Estado #%d (%s)", registry[i-1].state, global_Estados[registry[i-1].state]);
                     } else {
                         if (i + 1 >= registryCount) {
                             sprintf(string, " \u2B95 FINAL: Estado #%d (%s)", registry[i].state, global_Estados[registry[i].state]);
