@@ -155,14 +155,14 @@ void call_DFA(){
                     char string[100];
 
                     if (i == 0) {
-                        sprintf(string, " \u2B95 INICIO: Estado #%d (%s)", registry[i].state, global_Estados[registry[i].state]);
+                        sprintf(string, " \u2B95 INICIO: Estado #%d (%s), Símbolo a procesar: %c", registry[i].state, global_Estados[registry[i].state], registry[i + 1].symbol);
                     } else if (registry[i].state == FINAL_CHARACTER) {
-                        sprintf(string, " \u2B95 FINAL: Estado #%d (%s), Símbolo %c", registry[i-1].state, global_Estados[registry[i-1].state], registry[i].symbol);
+                        sprintf(string, " \u2B95 FINAL: Estado #%d (%s), Símbolo a procesar: %c", registry[i-1].state, global_Estados[registry[i-1].state], registry[i].symbol);
                     } else {
                         if (i + 1 >= registryCount) {
-                            sprintf(string, " \u2B95 FINAL: Estado #%d (%s), Símbolo %c", registry[i].state, global_Estados[registry[i].state], registry[i].symbol);
+                            sprintf(string, " \u2B95 FINAL: Estado #%d (%s)", registry[i].state, global_Estados[registry[i].state]);
                         } else {
-                            sprintf(string, " \u2B95 PASO #%d: Estado #%d (%s), Símbolo %c", registry[i].step, registry[i].state, global_Estados[registry[i].state], registry[i].symbol);
+                            sprintf(string, " \u2B95 PASO #%d: Estado #%d (%s), Símbolo a procesar: %c", registry[i].step, registry[i].state, global_Estados[registry[i].state], registry[i + 1].symbol);
                         }
                     }
 

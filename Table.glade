@@ -140,6 +140,9 @@ que puede realizar el autómata.
 
 El estado inicial está resaltado en verde.
 
+Para designar estados de aceptación dar click en las
+cajas de check ubicadas en la izquierda de la tabla.
+
 Se puede editar el nombre de los estados y los símbolos
 que forman parte del alfabeto. 
 
