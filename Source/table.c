@@ -59,12 +59,12 @@ void deploy_window_table(int estados, int simbolos, GtkWidget *previous_window){
 }
 
 void create_table(int rows, int cols){
-    combo_boxes_array = (GtkComboBoxText ***) (GtkComboBox ***) malloc(rows * sizeof(GtkComboBox **));
+    combo_boxes_array = (GtkComboBoxText ***) malloc(rows * sizeof(GtkComboBox **));
     entry_simbolos_array = (GtkEntry **)malloc(cols * sizeof(GtkEntry *));
     entry_estados_array = (GtkEntry **)malloc(rows * sizeof(GtkEntry *));
     check_button_array = (GtkCheckButton **)malloc(rows * sizeof(GtkEntry *));
     for (int i = 0; i < rows; ++i) {
-        combo_boxes_array[i] = (GtkComboBoxText **) (GtkComboBox **) malloc(cols * sizeof(GtkComboBox *));
+        combo_boxes_array[i] = (GtkComboBoxText **) malloc(cols * sizeof(GtkComboBox *));
         for (int j = 0; j < cols + 2; ++j) {
 
             GtkWidget *widget_to_add;
