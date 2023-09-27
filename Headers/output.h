@@ -27,6 +27,12 @@ extern const int WARNING_POPOVER_INTERVAL;
 
 /// PUBLIC METHODS
 
-void deploy_window_output(int **Table, int *Accept, char *Simbolos, char **Estados, GtkWidget *previous_window, int global_simbolos, int global_estados);
+void deploy_window_output(int **Table,
+                          int *Accept,
+                          char *Symbols,
+                          char **States,
+                          GtkWidget *previous_window,
+                          int num_symbols,
+                          int num_states);
 
 #endif //AUTOMATON_OUTPUT_H

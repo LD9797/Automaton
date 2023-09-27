@@ -1,7 +1,5 @@
 #include <string.h>
 #include "../Headers/dfadriver.h"
-#include <stdlib.h>
-#include <gtk/gtk.h>
 
 /// PROBLEM MODEL
 
@@ -11,76 +9,84 @@ int tableMappings[MAX_STATES][MAX_SYMBOLS];
 
 /// HELPER FUNCTIONS
 
-int symbolToInt(char symbol, const char* symbols) {
-    for (int i = 0; i < strlen(symbols); i++) {
-        if (symbols[i] == symbol) {
-            return i;
-        }
+int symbol_to_int(char symbol, const char *symbols) {
+  for (int i = 0; i < strlen(symbols); i++) {
+    if (symbols[i] == symbol) {
+      return i;
     }
+  }
 
-    return INVALID_CHARACTER;
+  if (symbol == ' '){
+    return EPSILON;
+  }
+
+  return INVALID_CHARACTER;
 }
 
 /// DFA DRIVER
 
-void init_DFA_driver(int **table, int *accept, char **states, char *symbols, int num_simbolos, int num_estados) {
-    for(int i = 0; i < num_simbolos; i++) {
-        originalSymbols[i] = symbols[i];
-    }
+void init_dfa_driver(int **table, const int *accept, char **states, const char *symbols, int num_symbols, int num_states) {
+  for (int i = 0; i < num_symbols; i++) {
+    originalSymbols[i] = symbols[i];
+  }
 
-    for(int i = 0; i < num_estados; i++) {
-        acceptStates[i] = accept[i];
-    }
+  for (int i = 0; i < num_states; i++) {
+    acceptStates[i] = accept[i];
+  }
 
-    for(int i = 0; i < num_estados; i++) {
-        for (int j = 0; j < num_simbolos; j++) {
-            tableMappings[i][j] = table[i][j];
-        }
+  for (int i = 0; i < num_states; i++) {
+    for (int j = 0; j < num_symbols; j++) {
+      tableMappings[i][j] = table[i][j];
     }
+  }
 }
 
-int DFA_driver(const char *hilera, struct Registry registry[], int *registryCount) {
-    int k = START_STATE;
-    int inputInt[strlen(hilera) + 1];
+int dfa_driver(const char *in_string, struct Registry registry[], int *registryCount) {
+  int k = START_STATE;
+  int inputInt[strlen(in_string) + 1];
 
-    for (int i = 0; hilera[i]; i++) {
-        char currentSymbol = hilera[i];
-        inputInt[i] = symbolToInt(currentSymbol, originalSymbols);
+  for (int i = 0; in_string[i]; i++) {
+    char currentSymbol = in_string[i];
+    inputInt[i] = symbol_to_int(currentSymbol, originalSymbols);
 
-        if (inputInt[i] == INVALID_CHARACTER) {
-            registry[*registryCount].step = 0;
-            registry[*registryCount].state = START_STATE;
-            registry[*registryCount].symbol = currentSymbol;
-            (*registryCount)++;
+    if (inputInt[i] == INVALID_CHARACTER) {
+      registry[*registryCount].step = 0;
+      registry[*registryCount].state = START_STATE;
+      registry[*registryCount].symbol = currentSymbol;
+      (*registryCount)++;
 
-            return INVALID_CHARACTER;
-        }
+      return INVALID_CHARACTER;
+    }
+  }
+
+  inputInt[strlen(in_string)] = FINAL_CHARACTER;
+
+  registry[*registryCount].step = 0;
+  registry[*registryCount].state = k;
+  registry[*registryCount].symbol = ' ';
+  (*registryCount)++;
+
+  for (int i = 0; inputInt[i] != FINAL_CHARACTER; i++) {
+    int symbolIndex = inputInt[i];
+
+    if (symbolIndex == EPSILON){
+      continue;
     }
 
-    inputInt[strlen(hilera)] = FINAL_CHARACTER;
-
-    registry[*registryCount].step = 0;
+    k = tableMappings[k][symbolIndex];
+    registry[*registryCount].step = i + 1;
     registry[*registryCount].state = k;
-    registry[*registryCount].symbol = ' ';
+    registry[*registryCount].symbol = originalSymbols[symbolIndex];
     (*registryCount)++;
 
-    for (int i = 0; inputInt[i] != FINAL_CHARACTER; i++) {
-        int symbolIndex = inputInt[i];
-        k = tableMappings[k][symbolIndex];
-
-        registry[*registryCount].step = i + 1;
-        registry[*registryCount].state = k;
-        registry[*registryCount].symbol = originalSymbols[symbolIndex];
-        (*registryCount)++;
-
-        if (k == FINAL_CHARACTER) {
-            break;
-        }
-    }
-
     if (k == FINAL_CHARACTER) {
-        return 0;
-    } else {
-        return acceptStates[k];
+      break;
     }
+  }
+
+  if (k == FINAL_CHARACTER) {
+    return 0;
+  } else {
+    return acceptStates[k];
+  }
 }

@@ -18,7 +18,6 @@
         <property name="can-focus">False</property>
         <property name="label" translatable="yes">En línea</property>
         <property name="use-underline">True</property>
-        <property name="active">True</property>
       </object>
     </child>
     <child>
