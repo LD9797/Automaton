@@ -39,7 +39,7 @@
         <child>
           <object class="GtkScrolledWindow" id="Scrolled1">
             <property name="width-request">760</property>
-            <property name="height-request">527</property>
+            <property name="height-request">490</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="shadow-type">in</property>
@@ -49,7 +49,7 @@
           </object>
           <packing>
             <property name="x">20</property>
-            <property name="y">15</property>
+            <property name="y">52</property>
           </packing>
         </child>
         <child>
@@ -86,6 +86,25 @@
           <packing>
             <property name="x">350</property>
             <property name="y">555</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="btn_exit_table">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <signal name="clicked" handler="on_btn_exit_table_clicked" swapped="no"/>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="stock">gtk-cancel</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="x">750</property>
+            <property name="y">10</property>
           </packing>
         </child>
       </object>

@@ -89,3 +89,8 @@ void on_btn_dialog_2_clicked(GtkWidget *button) {
   }
 }
 
+void on_btn_exit_clicked(GtkWidget *button) {
+  if(window_start != NULL){
+    gtk_main_quit();
+  }
+}

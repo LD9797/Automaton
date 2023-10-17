@@ -23,6 +23,7 @@ GtkButton *include_button;
 GtkMenuItem *menu_item_clean;
 GtkWidget *table_window = NULL;
 GtkCheckMenuItem *check_collapse;
+GtkButton *btn_exit_layout;
 
 /// CONSTANTS
 
@@ -201,6 +202,12 @@ void on_back_button_clicked() {
   }
 }
 
+void on_btn_exit_layout_clicked(){
+  if(window != NULL){
+    gtk_main_quit();
+  }
+}
+
 void deploy_window_output(int **Table,
                           int *Accept,
                           char *Symbols,
@@ -230,6 +237,7 @@ void deploy_window_output(int **Table,
   include_button = GTK_BUTTON(gtk_builder_get_object(builder, "include_button"));
   menu_item_clean = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menu_item_clean"));
   check_collapse = GTK_CHECK_MENU_ITEM(gtk_builder_get_object(builder, "menuitem_collapseprocess"));
+  btn_exit_layout = GTK_BUTTON(gtk_builder_get_object(builder, "btn_exit_layout"));
 
   // Connect signals
   g_signal_connect(entry, "activate", G_CALLBACK(call_DFA), NULL);
@@ -238,6 +246,7 @@ void deploy_window_output(int **Table,
   g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), NULL);
   g_signal_connect(menu_item_clean, "activate", G_CALLBACK(clear_text_view), NULL);
   g_signal_connect(back_button, "clicked", G_CALLBACK(on_back_button_clicked), NULL);
+  g_signal_connect(btn_exit_layout, "clicked", G_CALLBACK(on_btn_exit_layout_clicked), NULL);
 
   // Init buffer
   GtkTextIter iter;
