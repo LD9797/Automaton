@@ -7,15 +7,19 @@
     <property name="can-focus">False</property>
     <property name="stock">gtk-refresh</property>
   </object>
-  <object class="GtkImage" id="image2">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="stock">gtk-dialog-info</property>
-  </object>
   <object class="GtkMenu" id="menu_options">
     <property name="name">menu_options</property>
     <property name="visible">True</property>
     <property name="can-focus">False</property>
+    <child>
+      <object class="GtkCheckMenuItem" id="menuitem_collapseprocess">
+        <property name="name">menuitem_collapseprocess</property>
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">En línea</property>
+        <property name="use-underline">True</property>
+      </object>
+    </child>
     <child>
       <object class="GtkImageMenuItem" id="menu_item_clean">
         <property name="label" translatable="yes">Refrescar</property>
@@ -26,24 +30,15 @@
         <property name="use-stock">False</property>
       </object>
     </child>
-    <child>
-      <object class="GtkImageMenuItem" id="menuitem_info">
-        <property name="label" translatable="yes">Información</property>
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="image">image2</property>
-        <property name="use-stock">False</property>
-      </object>
-    </child>
   </object>
   <object class="GtkApplicationWindow" id="screen">
     <property name="name">screen</property>
     <property name="can-focus">False</property>
-    <property name="title" translatable="yes">Proyecto #1</property>
+    <property name="title" translatable="yes">Automaton</property>
     <property name="resizable">False</property>
     <property name="window-position">center</property>
     <property name="urgency-hint">True</property>
-    <property name="gravity">center</property>
+    <property name="gravity">west</property>
     <child>
       <object class="GtkBox" id="screen3_main_box">
         <property name="name">screen3_main_box</property>
@@ -61,6 +56,38 @@
         <property name="vexpand">True</property>
         <property name="orientation">vertical</property>
         <property name="spacing">10</property>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <child>
+              <object class="GtkButton" id="btn_exit_layout">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="on_btn_exit_layout_clicked" swapped="no"/>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="stock">gtk-cancel</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
         <child>
           <object class="GtkScrolledWindow" id="scrolled_view">
             <property name="name">scrolled_view</property>
@@ -204,6 +231,38 @@
               </packing>
             </child>
             <child>
+              <object class="GtkButton" id="btn_print_latex">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Más opciones</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="stock">gtk-print</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSeparator">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="padding">5</property>
+                <property name="position">7</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkButton" id="open_menu_button">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -220,7 +279,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">6</property>
+                <property name="position">8</property>
               </packing>
             </child>
           </object>

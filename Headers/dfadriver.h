@@ -6,6 +6,7 @@
 #define MAX_STATES 100
 #define FINAL_CHARACTER (-1)
 #define INVALID_CHARACTER (-1)
+#define EPSILON (-2)
 
 struct Registry {
     int step;
@@ -13,11 +14,7 @@ struct Registry {
     char symbol;
 };
 
-void init_DFA_driver(int **table, int *accept, char** states, char *symbols, int num_simbolos, int num_estados);
-int DFA_driver(const char *string, struct Registry registry[], int *registryCount);
-
-char **my_DFA_driver (int **Table,
-                      char *simbolos,
-                      const char *string, char **Estados);
+void init_dfa_driver(int **table, const int *accept, char** states, const char *symbols, int num_symbols, int num_states);
+int dfa_driver(const char *in_string, struct Registry registry[], int *registryCount);
 
 #endif //AUTOMATON_DFADRIVER_H
