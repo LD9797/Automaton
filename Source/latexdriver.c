@@ -21,3 +21,14 @@ int install_pdflatex_evince(){
   // Tools already installed.
   return 0;
 }
+
+// sudo apt update
+// sudo apt-get install texlive-latex-recommended texlive-latex-extra -y
+// sudo apt install graphviz ? Necessary ?
+// sudo tlmgr install dot2texi ? Necessary ?
+// graphviz.sty en el mismo directory que el .tex
+// crear aut.dot
+// dot -Tpdf -o aut.pdf aut.dot
+// pdflatex --shell-escape main.tex
+// https://jvgomez.github.io/pages/manually-install-latex-packages-in-ubuntu.html
+

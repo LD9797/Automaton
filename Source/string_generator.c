@@ -3,6 +3,13 @@
 #include <string.h>
 #include "../Headers/string_generator.h"
 
+// References:
+// https://www.scirp.org/pdf/IIM20120400007_41988083.pdf
+// https://stackoverflow.com/questions/26948724/create-syntax-tree-from-given-regular-expressions-for-re-to-dfa
+// https://www.scaler.com/topics/binary-tree-in-c/
+// https://stackoverflow.com/questions/3213827/how-to-iterate-over-a-string-in-c
+// https://stackoverflow.com/questions/20080789/given-a-regular-expression-how-would-i-generate-all-strings-that-match-it
+
 // TODO: Think about epsilon
 
 typedef enum { CHAR, STAR, CONCAT, ALT } NodeType;
