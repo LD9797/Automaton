@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../Headers/string_generator.h"
+
+// TODO: Think about epsilon
 
 typedef enum { CHAR, STAR, CONCAT, ALT } NodeType;
 
@@ -31,10 +34,10 @@ Node* create_node(NodeType type, char data) {
  * 4. Parse Char / Other
  */
 
-Node* parse_char_other(char **regex);
-Node* parse_concatenation(char **regex);
 Node* parse_or(char **regex);
+Node* parse_concatenation(char **regex);
 Node* parse_kleene_star(char **regex);
+Node* parse_char_other(char **regex);
 Node* parse_regex(char **regex);
 
 Node* parse_char_other(char **regex) {
@@ -42,10 +45,10 @@ Node* parse_char_other(char **regex) {
     (*regex)++;
     // Parse separately
     Node* node = parse_regex(regex);
-    //
     (*regex)++;
     return node;
   } else {
+    // Node as leaf
     Node* node = create_node(CHAR, **regex);
     (*regex)++;
     return node;
@@ -55,6 +58,7 @@ Node* parse_char_other(char **regex) {
 Node* parse_kleene_star(char **regex) {
   Node* node = parse_char_other(regex);
   while (*regex[0] == '*') {
+    // Node placed as root
     Node* starNode = create_node(STAR, '*');
     starNode->left = node;
     node = starNode;
@@ -66,7 +70,8 @@ Node* parse_kleene_star(char **regex) {
 Node* parse_concatenation(char **regex) {
   Node* node = parse_kleene_star(regex);
   while (*regex[0] != '\0' && *regex[0] != '|' && *regex[0] != ')') {
-    Node* concatNode = create_node(CONCAT, ' ');
+    // Node placed as root
+    Node* concatNode = create_node(CONCAT, '.');
     concatNode->left = node;
     concatNode->right = parse_kleene_star(regex);
     node = concatNode;
@@ -77,8 +82,8 @@ Node* parse_concatenation(char **regex) {
 Node* parse_or(char **regex) {
   Node* node = parse_concatenation(regex);
   while (*regex[0] == '|') {
+    // Node placed as root
     Node* altNode = create_node(ALT, '|');
-    // Altnode is placed as root.
     altNode->left = node;
     (*regex)++;
     altNode->right = parse_concatenation(regex);
@@ -108,11 +113,11 @@ void in_order_print_tree(Node* root, int level) {
   in_order_print_tree(root->right, level + 1);
 }
 
-char* generate_sample_string(Node* root, int starLoopCount, int chooseRight) {
+char* generate_sample_string(Node* root, int star_loop_count, int choose_right) {
   if (!root) return NULL;
 
-  char *leftStr = generate_sample_string(root->left, starLoopCount, chooseRight);
-  char *rightStr = generate_sample_string(root->right, starLoopCount, chooseRight);
+  char *leftStr = generate_sample_string(root->left, star_loop_count, choose_right);
+  char *rightStr = generate_sample_string(root->right, star_loop_count, choose_right);
   char *resultStr;
 
   switch (root->type) {
@@ -122,7 +127,7 @@ char* generate_sample_string(Node* root, int starLoopCount, int chooseRight) {
       resultStr[1] = '\0';
       break;
     case ALT:
-      if (chooseRight) {
+      if (choose_right) {
         resultStr = rightStr;
         free(leftStr);
       } else {
@@ -137,9 +142,9 @@ char* generate_sample_string(Node* root, int starLoopCount, int chooseRight) {
       free(rightStr);
       break;
     case STAR:
-      resultStr = malloc((strlen(leftStr) * starLoopCount + 1) * sizeof(char));
+      resultStr = malloc((strlen(leftStr) * star_loop_count + 1) * sizeof(char));
       resultStr[0] = '\0';
-      for (int i = 0; i < starLoopCount; ++i) {
+      for (int i = 0; i < star_loop_count; ++i) {
         strcat(resultStr, leftStr);
       }
       free(leftStr);
@@ -148,18 +153,117 @@ char* generate_sample_string(Node* root, int starLoopCount, int chooseRight) {
   return resultStr;
 }
 
+int stringInArray(char* string, char** array) {
+  for (size_t i = 0; i < ARRAY_SIZE; i++) {
+    if (array[i] != NULL && strcmp(string, array[i]) == 0) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+char** valid_strings_array(char *regex){
+  char* regex_copy = regex;
+  Node* parse_tree = parse_regex(&regex_copy);
+  char** array = malloc(ARRAY_SIZE * sizeof(char *));
+    // Check for Kleene star in regex
+    if (strchr(regex, '*') != NULL){
+      for(int i = 0; i < ARRAY_SIZE; i++) {
+          char* sample_string = generate_sample_string(parse_tree, i + 1, 0);
+          if (stringInArray(sample_string, array)){
+            sample_string = generate_sample_string(parse_tree, i + 1, 1);
+          }
+          array[i] = strdup(sample_string);
+      }
+    } else {
+      for(int i = 0; i < ARRAY_SIZE; i++) {
+        char* sample_string = generate_sample_string(parse_tree, 0, 0);
+        if (stringInArray(sample_string, array)){
+          sample_string = generate_sample_string(parse_tree, 0, 1);
+        }
+        array[i] = strdup(sample_string);
+      }
+    }
+    free(parse_tree);
+  return array;
+}
 
 
-int main() {
-  char *regex = "(ab|(ac)*d)";
+int is_special_char(char c) {
+  const char *special_chars = ".*+?|^$()[]{}";
+  return strchr(special_chars, c) != NULL;
+}
+
+void scramble_regex(char **regex_ptr){
+  char *regex = *regex_ptr;
+  int length = strlen(regex);
+  if (length == 1){
+    return;
+  }
+  char *result_regex = malloc(length * sizeof(char));
+  int *indices = malloc(length * sizeof(int));
+
+  int count = 0;
+  for (int i = 0; i < length; i++) {
+    if (!is_special_char(regex[i])) {
+      indices[count++] = i;
+    } else {
+      result_regex[i] = regex[i];
+    }
+  }
+
+  for (int i = 0; i < count; i++) {
+    int j = rand() % count;
+    while (regex[indices[j]] == regex[indices[i]]) {
+      j = rand() % count;
+    }
+    result_regex[indices[i]] = regex[indices[j]];
+  }
+
+  free(indices);
+  *regex_ptr = result_regex;
+}
+
+char** invalid_strings_array(char *regex){
+  char *copy_regex = regex;
+  scramble_regex(&copy_regex);
+  return valid_strings_array(copy_regex);
+}
+
+void test_parse_print_sample() {
+  char *regex = "((b(b|ab)*aa|a))*";
   Node* parseTree = parse_regex(&regex);
-
-  printf("Parse Tree:\n");
   in_order_print_tree(parseTree, 0);
-
-  char *sampleString = generate_sample_string(parseTree, 8, 1);
+  char *sampleString = generate_sample_string(parseTree, 1, 0);
+  printf("String: %s\n", sampleString);
+  sampleString = generate_sample_string(parseTree, 8, 1);
   printf("String: %s\n", sampleString);
   free(sampleString);
+}
 
-  return 0;
+void test_scramble(){
+  char *regex = "((b(b|ab)*aa|a))*";
+  char *copy_regex = regex;
+  scramble_regex(&copy_regex);
+  printf("String: %s\n", copy_regex);
+  Node* parseTree = parse_regex(&copy_regex);
+  in_order_print_tree(parseTree, 0);
+  char *sampleString = generate_sample_string(parseTree, 1, 0);
+  printf("String: %s\n", sampleString);
+}
+
+void test_invalid(){
+  char *regex = "((b(b|ab)*aa|a))*";
+  char** invalid_strings = invalid_strings_array(regex);
+  for(int i = 0; i < ARRAY_SIZE; i++) {
+    printf("String: %s\n", invalid_strings[i]);
+  }
+}
+
+void test_valid(){
+  char *regex = "((b(b|ab)*aa|a))*";
+  char** invalid_strings = valid_strings_array(regex);
+  for(int i = 0; i < ARRAY_SIZE; i++) {
+    printf("String: %s\n", invalid_strings[i]);
+  }
 }
