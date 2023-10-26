@@ -217,7 +217,9 @@ void on_btn_evaluar_clicked(GtkWidget *button) {
       sprintf(index_str, "%d", i);
       States[i] = strdup(index_str);
     } else {
-      States[i] = strdup(temp_text);
+      char *str_name = malloc((strlen(temp_text) + 2) * sizeof(char*));
+      sprintf(str_name, "\"%s\"", temp_text);
+      States[i] = strdup(str_name);
     }
   }
 
