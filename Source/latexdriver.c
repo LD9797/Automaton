@@ -58,7 +58,7 @@ int init_latex_driver(int **table, const int *accept, char **states, const char 
   return 0;
 }
 
-void draw_graph(){
+void draw_graph() {
   // Header
   char *header = malloc(200);
   strcpy(header, "digraph fsm { rankdir=LR; ");
@@ -66,19 +66,27 @@ void draw_graph(){
   // Accept States
   char *accept_states_nodes = malloc(200);
   strcpy(accept_states_nodes, "node [shape = doublecircle];");
-  char *list_accept_states = malloc((global_num_states * 2) + 2 * sizeof (char*));
-  list_accept_states[0] = '\0';
 
+  size_t size_accept = 0;
   int accept_empty = 0;
   for(int i = 0; i < global_num_states; i++){
-    if(accept_states[i] == 1){
+    if (accept_states[i] == 1) {
       accept_empty = 1;
-      list_accept_states = realloc(list_accept_states, strlen(list_accept_states) + strlen(*states_names[i]));
+      size_accept += strlen(*states_names[i]);
+    }
+  }
+
+  char *list_accept_states = malloc((size_accept) + MAX_STATES * sizeof(char*));
+  list_accept_states[0] = '\0';
+
+  for (int i = 0; i < global_num_states; i++) {
+    if (accept_states[i] == 1) {
       strcat(list_accept_states, *states_names[i]);
       strcat(list_accept_states, " ");
     }
   }
   strcat(list_accept_states, ";");
+
 
   size_t new_size = strlen(accept_states_nodes) + strlen("node [shape = circle];") + strlen(list_accept_states) + 1;
   accept_states_nodes = realloc(accept_states_nodes, new_size);
@@ -88,40 +96,19 @@ void draw_graph(){
   strcat(accept_states_nodes, " node [shape = circle];");
 
   // Transitions
-  char** transitions = malloc( (global_num_states * global_num_symbols) * sizeof (char*));
+  char **transitions = malloc((global_num_states * global_num_symbols) * sizeof(char*));
   int num_transitions = 1;
   transitions[0] = malloc(200);
   sprintf(transitions[0], "secret_node [style=invis, shape=point]; secret_node->%s [style=bold];", *states_names[0]);
 
-
-  for(int i = 0; i < global_num_states; i++){
-    for(int j = 0; j < global_num_symbols; j++){
+  for (int i = 0; i < global_num_states; i++) {
+    for (int j = 0; j < global_num_symbols; j++) {
       int table_destination = tables_mappings[i][j];
       if (table_destination == -1) continue;
 
-      char *source = malloc((strlen(*states_names[i]) + 20) * sizeof (char*));
-      strcpy(source, *states_names[i]);
-      char* label_str = malloc(200);
-      strcpy(label_str, "[label=\"");
-      char *destination = malloc(strlen(*states_names[table_destination] + 20) * sizeof (char*));
-      strcpy(destination, *states_names[table_destination]);
-
-      source = realloc(source, strlen(source) + strlen(destination) + 20);
-      strcat(source, "->");
-      strcat(source, destination);
-
-      char symbol[2] = {original_symbols[j], '\0'};
-      strcat(label_str, symbol);
-      strcat(label_str, "\"];");
-
-      transitions[num_transitions] = malloc((strlen(source) + strlen(label_str) + 20) * sizeof(char*));
-      strcpy(transitions[num_transitions], source);
-      strcat(transitions[num_transitions], label_str);
-
-      num_transitions++;
-      free(source);
-      free(label_str);
-      free(destination);
+      char *transition = malloc(300);
+      sprintf(transition, "%s -> %s [label=\"%c\"]; ", *states_names[i], *states_names[table_destination], original_symbols[j]);
+      transitions[num_transitions++] = transition;
     }
   }
 
@@ -131,21 +118,25 @@ void draw_graph(){
     total_length += strlen(transitions[i]);
   }
 
-  char* automaton_graph = malloc(total_length * sizeof (char*));
-
-  automaton_graph[0] = '\0';
-  strcpy(automaton_graph, header);
-  strcat(automaton_graph, accept_states_nodes);
-  for(int i = 0; i < num_transitions; i++){
+  char *automaton_graph = malloc(total_length * sizeof(char*));
+  sprintf(automaton_graph, "%s%s", header, accept_states_nodes);
+  for (int i = 0; i < num_transitions; i++) {
     strcat(automaton_graph, transitions[i]);
-
+    free(transitions[i]);
   }
 
   strcat(automaton_graph, "}");
 
   printf("String: %s\n", automaton_graph);
-  
+
+  // Clean up
+  free(header);
+  free(accept_states_nodes);
+  free(list_accept_states);
+  free(transitions);
+  free(automaton_graph);
 }
+
 
 
 
