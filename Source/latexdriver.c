@@ -119,6 +119,9 @@ void draw_graph(){
       strcat(transitions[num_transitions], label_str);
 
       num_transitions++;
+      free(source);
+      free(label_str);
+      free(destination);
     }
   }
 
@@ -141,13 +144,7 @@ void draw_graph(){
   strcat(automaton_graph, "}");
 
   printf("String: %s\n", automaton_graph);
-
-  // Clean up
-  //free(header);
-  //free(accept_states_nodes);
-  //free(list_accept_states);
-  //free(transitions);
-  //free(automaton_graph);
+  
 }
 
 
