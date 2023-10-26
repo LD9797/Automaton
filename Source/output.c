@@ -1,5 +1,6 @@
 #include "../Headers/output.h"
 #include "../Headers/dfadriver.h"
+#include "../Headers/latexdriver.h"
 
 /// DFA MODEL
 
@@ -24,7 +25,7 @@ GtkMenuItem *menu_item_clean;
 GtkWidget *table_window = NULL;
 GtkCheckMenuItem *check_collapse;
 GtkButton *btn_exit_layout;
-
+GtkButton *btn_print_latex;
 /// CONSTANTS
 
 const int DEFAULT_WINDOW_WIDTH = 800;
@@ -208,6 +209,16 @@ void on_btn_exit_layout_clicked(){
   }
 }
 
+int call_latex_driver(){
+  int ret = init_latex_driver(global_table, global_accept, global_states, global_symbols, n_symbols, n_states);
+  return ret;
+}
+
+void on_btn_print_latex_activate(){
+  int ret = call_latex_driver();
+  if (ret == 0) draw_graph();
+}
+
 void deploy_window_output(int **Table,
                           int *Accept,
                           char *Symbols,
@@ -238,6 +249,7 @@ void deploy_window_output(int **Table,
   menu_item_clean = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menu_item_clean"));
   check_collapse = GTK_CHECK_MENU_ITEM(gtk_builder_get_object(builder, "menuitem_collapseprocess"));
   btn_exit_layout = GTK_BUTTON(gtk_builder_get_object(builder, "btn_exit_layout"));
+  btn_print_latex = GTK_BUTTON(gtk_builder_get_object(builder, "btn_print_latex"));
 
   // Connect signals
   g_signal_connect(entry, "activate", G_CALLBACK(call_DFA), NULL);
@@ -247,6 +259,7 @@ void deploy_window_output(int **Table,
   g_signal_connect(menu_item_clean, "activate", G_CALLBACK(clear_text_view), NULL);
   g_signal_connect(back_button, "clicked", G_CALLBACK(on_back_button_clicked), NULL);
   g_signal_connect(btn_exit_layout, "clicked", G_CALLBACK(on_btn_exit_layout_clicked), NULL);
+  g_signal_connect(btn_print_latex, "clicked", G_CALLBACK(on_btn_print_latex_activate), NULL);
 
   // Init buffer
   GtkTextIter iter;

@@ -236,6 +236,7 @@
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <property name="tooltip-text" translatable="yes">Más opciones</property>
+                <signal name="activate" handler="on_btn_print_latex_activate" swapped="no"/>
                 <child>
                   <object class="GtkImage">
                     <property name="visible">True</property>
