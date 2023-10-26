@@ -143,14 +143,11 @@ void draw_graph(){
   printf("String: %s\n", automaton_graph);
 
   // Clean up
-  free(header);
-  free(accept_states_nodes);
-  free(list_accept_states);
-  free(transitions);
-  free(automaton_graph);
-
-
-  
+  //free(header);
+  //free(accept_states_nodes);
+  //free(list_accept_states);
+  //free(transitions);
+  //free(automaton_graph);
 }
 
 
