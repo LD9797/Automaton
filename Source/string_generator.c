@@ -9,6 +9,7 @@
 // https://www.scaler.com/topics/binary-tree-in-c/
 // https://stackoverflow.com/questions/3213827/how-to-iterate-over-a-string-in-c
 // https://stackoverflow.com/questions/20080789/given-a-regular-expression-how-would-i-generate-all-strings-that-match-it
+// https://en.cppreference.com/w/c/experimental/dynamic/strdup
 
 // TODO: Think about epsilon
 

@@ -209,13 +209,14 @@ void on_btn_exit_layout_clicked(){
   }
 }
 
-void call_latex_driver(){
-  init_latex_driver(global_table, global_accept, global_states, global_symbols, n_symbols, n_states);
+int call_latex_driver(){
+  int ret = init_latex_driver(global_table, global_accept, global_states, global_symbols, n_symbols, n_states);
+  return ret;
 }
 
 void on_btn_print_latex_activate(){
-  call_latex_driver();
-  draw_graph();
+  int ret = call_latex_driver();
+  if (ret == 0) draw_graph();
 }
 
 void deploy_window_output(int **Table,
