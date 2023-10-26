@@ -3,9 +3,9 @@
 
 /// PROBLEM MODEL
 
-int acceptStates[MAX_STATES];
-char originalSymbols[MAX_SYMBOLS];
-int tableMappings[MAX_STATES][MAX_SYMBOLS];
+int accept_states[MAX_STATES];
+char original_symbols[MAX_SYMBOLS];
+int tables_mappings[MAX_STATES][MAX_SYMBOLS];
 
 /// HELPER FUNCTIONS
 
@@ -27,16 +27,16 @@ int symbol_to_int(char symbol, const char *symbols) {
 
 void init_dfa_driver(int **table, const int *accept, char **states, const char *symbols, int num_symbols, int num_states) {
   for (int i = 0; i < num_symbols; i++) {
-    originalSymbols[i] = symbols[i];
+    original_symbols[i] = symbols[i];
   }
 
   for (int i = 0; i < num_states; i++) {
-    acceptStates[i] = accept[i];
+    accept_states[i] = accept[i];
   }
 
   for (int i = 0; i < num_states; i++) {
     for (int j = 0; j < num_symbols; j++) {
-      tableMappings[i][j] = table[i][j];
+      tables_mappings[i][j] = table[i][j];
     }
   }
 }
@@ -47,7 +47,7 @@ int dfa_driver(const char *in_string, struct Registry registry[], int *registryC
 
   for (int i = 0; in_string[i]; i++) {
     char currentSymbol = in_string[i];
-    inputInt[i] = symbol_to_int(currentSymbol, originalSymbols);
+    inputInt[i] = symbol_to_int(currentSymbol, original_symbols);
 
     if (inputInt[i] == INVALID_CHARACTER) {
       registry[*registryCount].step = 0;
@@ -73,10 +73,10 @@ int dfa_driver(const char *in_string, struct Registry registry[], int *registryC
       continue;
     }
 
-    k = tableMappings[k][symbolIndex];
+    k = tables_mappings[k][symbolIndex];
     registry[*registryCount].step = i + 1;
     registry[*registryCount].state = k;
-    registry[*registryCount].symbol = originalSymbols[symbolIndex];
+    registry[*registryCount].symbol = original_symbols[symbolIndex];
     (*registryCount)++;
 
     if (k == FINAL_CHARACTER) {
@@ -87,6 +87,6 @@ int dfa_driver(const char *in_string, struct Registry registry[], int *registryC
   if (k == FINAL_CHARACTER) {
     return 0;
   } else {
-    return acceptStates[k];
+    return accept_states[k];
   }
 }
