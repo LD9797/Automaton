@@ -129,7 +129,7 @@ int generate_display_latex_doc(char *automaton_graph){
   char *command = "pdflatex --shell-escape main.tex";
   int ret = system(command);
   if (ret == 0){
-    char *display = "evince --fullscreen main.pdf &";
+    char *display = "evince --presentation main.pdf &";
     system(display);
   }
   return ret;

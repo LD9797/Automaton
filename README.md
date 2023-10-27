@@ -18,7 +18,7 @@ Make
 
 ```
 sudo apt-get update
-sudo apt-get install cmake make libgtk-3-dev
+sudo apt-get install cmake make libgtk-3-dev -y
 ```
 3. Compilation steps:
 ```
@@ -26,7 +26,6 @@ mkdir build
 cd build
 cmake ..
 make
-cp ../*.glade ./
 ```
 4. Execute
 ```
