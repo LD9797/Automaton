@@ -96,6 +96,23 @@ char* str_replace(const char* original, const char* old_substring, const char* n
   return result;
 }
 
+char* read_template(const char* template_file) {
+  FILE* file = fopen(template_file, "r");
+
+  fseek(file, 0, SEEK_END);
+  long length = ftell(file);
+  fseek(file, 0, SEEK_SET);
+
+  char* template = (char*)malloc(length + 1);
+
+  size_t read_len = fread(template, 1, length, file);
+  template[length] = '\0';
+
+  fclose(file);
+  return template;
+}
+
+
 int save_and_compile_dot(char *automaton_graph){
   FILE *file = fopen("fsm.dot", "w");
   fputs(automaton_graph, file);
@@ -106,22 +123,39 @@ int save_and_compile_dot(char *automaton_graph){
 }
 
 int generate_display_latex_doc(char *automaton_graph){
-  char *header = "\\documentclass{article}"
-                 "\\usepackage[pdf]{graphviz}"
-                 "\\begin{document}";
-  char *end = "\\end{document}";
+  char *template = read_template("template.tex");
 
+  char* components_subtitle = " \\subsection*{Components:}";
+
+  // Formatting DFA graph for Latex.
+  char* dfa_subtitle = " \\subsection*{DFA Graph:}";
   char* replaced = str_replace(automaton_graph, "digraph", "\\digraph[width=0.8\\columnwidth]");
   char* automaton_replaced = str_replace(replaced, "fsm", "{fsm}");
 
-  size_t size_document = strlen(header) + strlen(automaton_replaced) + strlen(end);
+  char* sample_accepted_subtitle = " \\subsection*{Sample accepted strings:}";
+
+  char* sample_rejected_subtitle = " \\subsection*{Sample rejected strings:}";
+
+  char* regex_subtitle = " \\subsection*{Associated Regular Expression:}";
+
+  char *end = "\\end{document}";
+
+
+  size_t size_document = strlen(components_subtitle) + strlen(dfa_subtitle) + strlen(automaton_replaced) +
+      strlen(sample_accepted_subtitle) + strlen(sample_rejected_subtitle) + strlen(regex_subtitle) + strlen(end);
+
+
   char* document = malloc(size_document * sizeof (char*));
-  sprintf(document, "%s %s %s", header, automaton_replaced, end);
+
+  sprintf(document, "%s %s %s %s %s %s %s", template, dfa_subtitle, automaton_replaced, sample_accepted_subtitle,
+          sample_rejected_subtitle, regex_subtitle, end );
+
 
   FILE *file = fopen("main.tex", "w");
   fputs(document, file);
   fclose(file);
 
+  free(template);
   free(replaced);
   free(automaton_replaced);
   free(document);
