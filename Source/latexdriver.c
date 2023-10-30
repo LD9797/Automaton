@@ -147,7 +147,7 @@ int generate_display_latex_doc(char *automaton_graph){
 
   char* document = malloc(size_document * sizeof (char*));
 
-  sprintf(document, "%s %s %s %s %s %s %s", template, dfa_subtitle, automaton_replaced, sample_accepted_subtitle,
+  sprintf(document, "%s %s %s %s %s %s %s %s", template, dfa_subtitle, components_subtitle, automaton_replaced, sample_accepted_subtitle,
           sample_rejected_subtitle, regex_subtitle, end );
 
 
