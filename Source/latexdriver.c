@@ -241,6 +241,8 @@ void draw_graph() {
   save_and_compile_dot(automaton_graph);
   generate_display_latex_doc(automaton_graph);
 
+  dfa_math_components(accept_states, original_symbols);
+
   // Clean up
   free(header);
   free(list_accept_states);
@@ -249,7 +251,68 @@ void draw_graph() {
   free(automaton_graph);
 }
 
+void dfa_math_components(int *Accept, const char * symbols) {
+    //estado inicial
+    char *q0 = *states_names[0];
+    printf("q0 %s\n", q0);
 
+    //estados de aceptación
+    int n = sizeof(Accept);
+    char acceptance_states[10000]; //string con los estados de aceptacion
+    strcat(acceptance_states, "\\{");
+
+    char states_list[10000]; //string con los estados de aceptacion
+    strcat(states_list, "\\{");
+    for (int i = 0; i < global_num_states; i++) {
+        if (accept_states[i] == 1) {
+            strcat(acceptance_states, *states_names[i]);
+            strcat(acceptance_states, ", ");
+        }
+        //estados
+        strcat(states_list, *states_names[i]);
+        strcat(states_list, ", ");
+
+    }
+    strcat(acceptance_states, "\\}");
+    strcat(states_list, "\\}");
+    printf("Aceptacion: %s\n", acceptance_states);
+    printf("Estados: %s\n", states_list);
+
+    //Alfabeto
+    char list_of_symbols[10000]; //string con los estados de aceptacion
+    strcat(list_of_symbols, "\\{");
+
+    for(int j = 0; j < global_num_symbols; j++) {
+        char num_str[20];
+        sprintf(num_str, "%c", original_symbols[j]);
+        if (j != 0) {
+            strcat(list_of_symbols, ", "); // Agregamos una coma y un espacio
+        }
+        strcat(list_of_symbols, num_str);
+    }
+
+    strcat(list_of_symbols, "\\}");
+    printf("Alfabeto: %s\n", list_of_symbols);
+
+    //Tabla
+    printf("\\begin{tabular}{|c|c|c|}\n");
+    printf("\\hline\n");
+
+    for (int i = 0; i < global_num_states; i++) {
+        for (int j = 0; j < global_num_symbols; j++) {
+            printf("%d", tables_mappings[i][j]);
+
+            if (j < 2) {
+                printf(" & ");  // Separador entre columnas
+            } else {
+                printf(" \\\\ \\hline\n");  // Fin de la fila y separador horizontal
+            }
+        }
+    }
+
+    printf("\\end{tabular}\n");
+
+}
 
 
 // sudo apt update
