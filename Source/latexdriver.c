@@ -142,11 +142,9 @@ int generate_display_latex_doc(char *automaton_graph){
 
   char *end = "\\end{document}";
 
-
   size_t size_document = strlen(components_subtitle) + strlen(dfa_subtitle) + strlen(automaton_replaced) +
       strlen(sample_accepted_subtitle) + strlen(sample_rejected_subtitle) + strlen(regex_subtitle) + strlen(end) +
-          strlen(components);
-
+          strlen(components) + strlen(template);
 
   char* document = malloc(size_document * sizeof (char*));
 
@@ -157,18 +155,18 @@ int generate_display_latex_doc(char *automaton_graph){
           sample_rejected_subtitle,
           regex_subtitle,
           end );
-
-
+//
+//
   FILE *file = fopen("main.tex", "w");
   fputs(document, file);
   fclose(file);
-
+//
   free(template);
   free(components);
   free(replaced);
   free(automaton_replaced);
   free(document);
-
+//
   char *command = "pdflatex --shell-escape main.tex";
   int ret = system(command);
   if (ret == 0){
@@ -180,8 +178,7 @@ int generate_display_latex_doc(char *automaton_graph){
 
 void draw_graph() {
   // Header
-  char *header = malloc(200);
-  strcpy(header, "digraph fsm { rankdir=LR; ");
+  char *header = "digraph fsm { rankdir=LR; ";
 
   // Accept States
   size_t size_accept = 0;
@@ -193,7 +190,7 @@ void draw_graph() {
     }
   }
 
-  char *list_accept_states = malloc((size_accept) + MAX_STATES * sizeof(char*));
+  char *list_accept_states = malloc(size_accept + MAX_STATES * sizeof(char*));
   list_accept_states[0] = '\0';
 
   for (int i = 0; i < global_num_states; i++) {
@@ -214,19 +211,24 @@ void draw_graph() {
 
 
   // Transitions
-  char **transitions = malloc((global_num_states * global_num_symbols) * sizeof(char*));
+  char** transitions = malloc(((global_num_states * global_num_symbols) + 1) * sizeof(char*));
   int num_transitions = 1;
-  transitions[0] = malloc(200);
-  sprintf(transitions[0], "secret_node [style=invis, shape=point]; secret_node->%s [style=bold];", *states_names[0]);
+
+  size_t size_initial_transition = strlen("secret_node [style=invis, shape=point]; secret_node->%s [style=bold];") + strlen(*states_names[0]);
+  char *initial_transition = malloc(size_initial_transition);
+  sprintf(initial_transition, "secret_node [style=invis, shape=point]; secret_node->%s [style=bold];", *states_names[0]);
+
+  transitions[0] = initial_transition;
 
   for (int i = 0; i < global_num_states; i++) {
     for (int j = 0; j < global_num_symbols; j++) {
-      int table_destination = tables_mappings[i][j];
+     int table_destination = tables_mappings[i][j];
       if (table_destination == -1) continue;
-
-      char *transition = malloc(300);
+      size_t len_transition = strlen("%s -> %s [label=\"%c\"]; ") + strlen(*states_names[i]) + strlen(*states_names[table_destination]) + 1;
+      char *transition = malloc(len_transition);
       sprintf(transition, "%s -> %s [label=\"%c\"]; ", *states_names[i], *states_names[table_destination], original_symbols[j]);
-      transitions[num_transitions++] = transition;
+      transitions[num_transitions] = transition;
+      num_transitions++;
     }
   }
 
@@ -244,14 +246,11 @@ void draw_graph() {
   }
 
   strcat(automaton_graph, "}");
-
-  printf("String: %s\n", automaton_graph);
-
+//
   save_and_compile_dot(automaton_graph);
   generate_display_latex_doc(automaton_graph);
 
   // Clean up
-  free(header);
   free(list_accept_states);
   free(accept_states_nodes);
   free(transitions);
@@ -385,7 +384,6 @@ char* dfa_math_components() {
         free(latex_table[i]);
     }
     strcat(dfa_components, "\\end{tabular}\n");
-    printf("Components: %s\n", dfa_components);
 
     // Free allocated memory
     free(q0);
