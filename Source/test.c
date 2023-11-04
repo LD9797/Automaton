@@ -90,6 +90,7 @@ void remove_element(struct Linked_list *list, int value) {
                 previous_node->next = current_node->next;
             }
 
+            list->length--;
             free(current_node);
             return;
         }
