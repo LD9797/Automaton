@@ -161,8 +161,8 @@ char* generate_sample_string(Node* root, int star_loop_count, int choose_right) 
   return resultStr;
 }
 
-int stringInArray(char* string, char** array) {
-  for (size_t i = 0; i < ARRAY_SIZE; i++) {
+int stringInArray(char* string, char** array, int index) {
+  for (size_t i = 0; i < index; i++) {
     if (array[i] != NULL && strcmp(string, array[i]) == 0) {
       return 1;
     }
@@ -178,7 +178,7 @@ char** valid_strings_array(char *regex){
     if (strchr(regex, '*') != NULL){
       for(int i = 0; i < ARRAY_SIZE; i++) {
           char* sample_string = generate_sample_string(parse_tree, i + 1, 0);
-          if (stringInArray(sample_string, array)){
+          if (i > 0 && stringInArray(sample_string, array, i)){
             sample_string = generate_sample_string(parse_tree, i + 1, 1);
           }
           array[i] = strdup(sample_string);
@@ -186,7 +186,7 @@ char** valid_strings_array(char *regex){
     } else {
       for(int i = 0; i < ARRAY_SIZE; i++) {
         char* sample_string = generate_sample_string(parse_tree, 0, 0);
-        if (stringInArray(sample_string, array)){
+        if (i > 0 && stringInArray(sample_string, array, i)){
           sample_string = generate_sample_string(parse_tree, 0, 1);
         }
         array[i] = strdup(sample_string);
@@ -233,8 +233,13 @@ void scramble_regex(char **regex_ptr){
 }
 
 char** invalid_strings_array(char *regex){
+  if(strlen(regex) == 0){
+    return valid_strings_array(regex);
+  }
   char *copy_regex = regex;
   scramble_regex(&copy_regex);
+  if(strlen(regex) != 1)
+    copy_regex[strlen(regex)] = '\0';
   return valid_strings_array(copy_regex);
 }
 

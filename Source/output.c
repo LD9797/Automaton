@@ -210,7 +210,8 @@ void on_btn_exit_layout_clicked(){
 }
 
 int call_latex_driver(){
-  int ret = init_latex_driver(global_table, global_accept, global_states, global_symbols, n_symbols, n_states);
+  char* sample_regex = "((b(b|ab)*aa|a))*";
+  int ret = init_latex_driver(global_table, global_accept, global_states, global_symbols, n_symbols, n_states, sample_regex);
   return ret;
 }
 

@@ -3,6 +3,7 @@
 #include "../Headers/dfadriver.h"
 #include <string.h>
 #include <stdio.h>
+#include "../Headers/string_generator.h"
 
 static int accept_states[MAX_STATES];
 static char original_symbols[MAX_SYMBOLS];
@@ -10,6 +11,7 @@ static char **states_names[MAX_STATES];
 static int tables_mappings[MAX_STATES][MAX_SYMBOLS];
 static int global_num_states;
 static int global_num_symbols;
+static char *regex_automaton;
 
 int install_pdflatex_evince(){
   // Checking if tools are installed.
@@ -37,7 +39,8 @@ int install_pdflatex_evince(){
   return 0;
 }
 
-int init_latex_driver(int **table, const int *accept, char **states, const char *symbols, int num_symbols, int num_states) {
+
+int init_latex_driver(int **table, const int *accept, char **states, const char *symbols, int num_symbols, int num_states, char *regex) {
   if(install_pdflatex_evince() == 1){
     return 1;
   }
@@ -59,9 +62,11 @@ int init_latex_driver(int **table, const int *accept, char **states, const char 
 
   global_num_states = num_states;
   global_num_symbols = num_symbols;
+  regex_automaton = regex;
 
   return 0;
 }
+
 
 char* str_replace(const char* original, const char* old_substring, const char* new_substring) {
   int occurrences = 0;
@@ -96,6 +101,7 @@ char* str_replace(const char* original, const char* old_substring, const char* n
   return result;
 }
 
+
 char* read_template(const char* template_file) {
   FILE* file = fopen(template_file, "r");
 
@@ -122,6 +128,199 @@ int save_and_compile_dot(char *automaton_graph){
   return ret;
 }
 
+
+void remove_last_comma(char* str) {
+  int len = strlen(str);
+  for (int i = len - 1; i >= 0; i--) {
+    if (str[i] == ',') {
+      memmove(&str[i], &str[i + 1], len - i - 1);
+      break;
+    }
+  }
+}
+
+
+char* dfa_math_components() {
+  // Initial state q0
+  char* q0 = malloc(strlen(states_names[0][0]) + 30);
+  sprintf(q0, "%s%s", states_names[0][0], "\n\n");
+
+  // Acceptance states -> F
+  char* acceptance_states = malloc(1000);
+  acceptance_states[0] = '\0';
+  strcat(acceptance_states, "\\{");
+
+  // All states -> Q
+  char* states_list = malloc(1000);
+  states_list[0] = '\0';
+  strcat(states_list, "\\{");
+
+  int accept_states_found = 0;
+
+  for (int i = 0; i < global_num_states; i++) {
+    if (accept_states[i] == 1) {
+      accept_states_found = 1;
+      strcat(acceptance_states, states_names[i][0]);
+      strcat(acceptance_states, ", ");
+    }
+    strcat(states_list, states_names[i][0]);
+    if(i != global_num_states - 1)
+      strcat(states_list, ", ");
+    else
+      strcat(states_list, ",");
+  }
+
+  if(accept_states_found) {
+    int len = strlen(acceptance_states);
+    if (len > 0) {
+      acceptance_states[len - 1] = '\0';
+    }
+  }
+
+  strcat(acceptance_states, "\\}\n");
+
+  strcat(states_list, "\\}\n");
+  remove_last_comma(acceptance_states);
+  remove_last_comma(states_list);
+
+  // Alphabet SIGMA
+  char* list_of_symbols = malloc(1000);
+  list_of_symbols[0] = '\0';
+  strcat(list_of_symbols, "\\{");
+
+  for(int j = 0; j < global_num_symbols; j++) {
+    char num_str[3] = {original_symbols[j], '\0'};
+    if (j != 0) {
+      strcat(list_of_symbols, ", ");
+    }
+    strcat(list_of_symbols, num_str);
+  }
+
+  strcat(list_of_symbols, "\\}\n\n");
+
+  // LaTeX Table Header
+  char* header = malloc(strlen("\\begin{tabular}{|c|}\n\\hline\n") + (global_num_symbols * 2) + 20);
+  header[0] = '\0';
+  strcat(header, "\\begin{tabular}{|c");
+  for(int i = 0; i < global_num_symbols; i++) {
+    strcat(header, "|c");
+  }
+  strcat(header, "|}\n\\hline\n");
+
+  // Symbol Row
+  char* symbol_row = malloc(global_num_symbols * 3);
+  symbol_row[0] = '\0';
+  strcat(symbol_row, "&");
+  for(int i = 0; i < global_num_symbols; i++) {
+    char num_str[3] = {original_symbols[i], '\0'};
+    strcat(symbol_row, num_str);
+    if (i == global_num_symbols - 1) {
+      strcat(symbol_row, " \\\\ \\hline\n");
+    } else {
+      strcat(symbol_row, " & ");
+    }
+  }
+
+  // LaTeX Table for Transitions
+  char** latex_table = malloc(global_num_states * sizeof(char *));
+  for (int i = 0; i < global_num_states; i++) {
+    latex_table[i] = malloc(10000);
+    sprintf(latex_table[i], "%s & ", states_names[i][0]);
+    for (int j = 0; j < global_num_symbols; j++) {
+      if (tables_mappings[i][j] == -1) {
+        strcat(latex_table[i], "-");
+      } else {
+        strcat(latex_table[i], states_names[tables_mappings[i][j]][0]);
+      }
+      if (j == global_num_symbols - 1) {
+        strcat(latex_table[i], " \\\\ \\hline\n");
+      } else {
+        strcat(latex_table[i], " & ");
+      }
+    }
+  }
+
+  // Calculate total length and allocate memory for the final string
+  size_t total_length = strlen(q0) + strlen(acceptance_states) + strlen(states_list) +
+      strlen(list_of_symbols) + strlen(header) + strlen(symbol_row) + 300;
+  for (int i = 0; i < global_num_states; i++) {
+    total_length += strlen(latex_table[i]);
+  }
+
+  char* dfa_components = malloc(total_length);
+  sprintf(dfa_components, "\\noindent\n\nq0 = %sQ = %s$\\Sigma$ = %sF = %s\n $\\delta$ = \n%s%s",
+          q0, states_list, list_of_symbols, acceptance_states, header, symbol_row);
+
+  for(int i = 0; i < global_num_states; i++) {
+    strcat(dfa_components, latex_table[i]);
+    free(latex_table[i]);
+  }
+  strcat(dfa_components, "\\end{tabular}\n");
+
+  // Free allocated memory
+  free(q0);
+  free(acceptance_states);
+  free(states_list);
+  free(list_of_symbols);
+  free(header);
+  free(symbol_row);
+  free(latex_table);
+
+  return dfa_components;
+}
+
+
+char* string_array_to_latex(char** strings_array){
+  char* itemize_string = "\\begin{itemize}\n"
+                         "%s"
+                         "%s"
+                         "%s"
+                         "%s"
+                         "%s"
+                         "\\end{itemize}";
+
+  size_t total_size = strlen(itemize_string);
+
+  char* format = "\\item %s\n";
+  char** formatted_strings = malloc(ARRAY_SIZE* sizeof(char *));
+  for(int i = 0; i < ARRAY_SIZE; i++){
+    size_t size = strlen(format) + strlen(strings_array[i]);
+    total_size += size;
+    char* formatted_string = malloc(size * sizeof(char *));
+    sprintf(formatted_string, format, strings_array[i]);
+    formatted_strings[i] = formatted_string;
+  }
+
+  char* string_array_latex = malloc(total_size * sizeof (char *));
+  sprintf(string_array_latex, itemize_string,
+          formatted_strings[0],
+          formatted_strings[1],
+          formatted_strings[2],
+          formatted_strings[3],
+          formatted_strings[4],
+          formatted_strings[5]);
+
+  for(int i = 0; i < ARRAY_SIZE; i++){
+    free(formatted_strings[i]);
+  }
+  free(formatted_strings);
+
+  return string_array_latex;
+}
+
+
+char* generate_valid_strings() {
+  char** valid_strings = valid_strings_array(regex_automaton);
+  return string_array_to_latex(valid_strings);
+}
+
+
+char* generate_invalid_strings(){
+  char** invalid_strings = invalid_strings_array(regex_automaton);
+  return string_array_to_latex(invalid_strings);
+}
+
+
 int generate_display_latex_doc(char *automaton_graph){
   char *template = read_template("template.tex");
 
@@ -136,7 +335,11 @@ int generate_display_latex_doc(char *automaton_graph){
 
   char* sample_accepted_subtitle = " \\subsection*{Sample accepted strings:}";
 
+  char* sample_accepted = generate_valid_strings();
+
   char* sample_rejected_subtitle = " \\subsection*{Sample rejected strings:}";
+
+  char* sample_rejected = generate_invalid_strings();
 
   char* regex_subtitle = " \\subsection*{Associated Regular Expression:}";
 
@@ -144,16 +347,19 @@ int generate_display_latex_doc(char *automaton_graph){
 
   size_t size_document = strlen(components_subtitle) + strlen(dfa_subtitle) + strlen(automaton_replaced) +
       strlen(sample_accepted_subtitle) + strlen(sample_rejected_subtitle) + strlen(regex_subtitle) + strlen(end) +
-          strlen(components) + strlen(template);
+          strlen(components) + strlen(template) + strlen(sample_accepted) + strlen(sample_rejected) + strlen(regex_automaton) + 2;
 
   char* document = malloc(size_document * sizeof (char*));
 
-  sprintf(document, "%s %s %s %s %s %s %s %s %s", template, components_subtitle, components,
+  sprintf(document, "%s %s %s %s %s %s %s %s %s %s $%s$ %s", template, components_subtitle, components,
           dfa_subtitle,
           automaton_replaced,
           sample_accepted_subtitle,
+          sample_accepted,
           sample_rejected_subtitle,
+          sample_rejected,
           regex_subtitle,
+          regex_automaton,
           end );
 //
 //
@@ -165,6 +371,8 @@ int generate_display_latex_doc(char *automaton_graph){
   free(components);
   free(replaced);
   free(automaton_replaced);
+  free(sample_accepted);
+  free(sample_rejected);
   free(document);
 //
   char *command = "pdflatex --shell-escape main.tex";
@@ -175,6 +383,7 @@ int generate_display_latex_doc(char *automaton_graph){
   }
   return ret;
 }
+
 
 void draw_graph() {
   // Header
@@ -256,147 +465,6 @@ void draw_graph() {
   free(transitions);
   free(automaton_graph);
 }
-
-void remove_last_comma(char* str) {
-    int len = strlen(str);
-    for (int i = len - 1; i >= 0; i--) {
-        if (str[i] == ',') {
-            memmove(&str[i], &str[i + 1], len - i - 1);
-            break;
-        }
-    }
-}
-
-
-char* dfa_math_components() {
-    // Initial state q0
-    char* q0 = malloc(strlen(states_names[0][0]) + 30);
-    sprintf(q0, "%s%s", states_names[0][0], "\n\n");
-
-    // Acceptance states -> F
-    char* acceptance_states = malloc(1000);
-    acceptance_states[0] = '\0';
-    strcat(acceptance_states, "\\{");
-
-    // All states -> Q
-    char* states_list = malloc(1000);
-    states_list[0] = '\0';
-    strcat(states_list, "\\{");
-
-    int accept_states_found = 0;
-
-    for (int i = 0; i < global_num_states; i++) {
-        if (accept_states[i] == 1) {
-            accept_states_found = 1;
-            strcat(acceptance_states, states_names[i][0]);
-            strcat(acceptance_states, ", ");
-        }
-        strcat(states_list, states_names[i][0]);
-        if(i != global_num_states - 1)
-            strcat(states_list, ", ");
-        else
-            strcat(states_list, ",");
-    }
-
-    if(accept_states_found) {
-        int len = strlen(acceptance_states);
-        if (len > 0) {
-            acceptance_states[len - 1] = '\0';
-        }
-    }
-
-    strcat(acceptance_states, "\\}\n");
-
-    strcat(states_list, "\\}\n");
-    remove_last_comma(acceptance_states);
-    remove_last_comma(states_list);
-
-    // Alphabet SIGMA
-    char* list_of_symbols = malloc(1000);
-    list_of_symbols[0] = '\0';
-    strcat(list_of_symbols, "\\{");
-
-    for(int j = 0; j < global_num_symbols; j++) {
-        char num_str[3] = {original_symbols[j], '\0'};
-        if (j != 0) {
-            strcat(list_of_symbols, ", ");
-        }
-        strcat(list_of_symbols, num_str);
-    }
-
-    strcat(list_of_symbols, "\\}\n\n");
-
-    // LaTeX Table Header
-    char* header = malloc(strlen("\\begin{tabular}{|c|}\n\\hline\n") + (global_num_symbols * 2) + 20);
-    header[0] = '\0';
-    strcat(header, "\\begin{tabular}{|c");
-    for(int i = 0; i < global_num_symbols; i++) {
-        strcat(header, "|c");
-    }
-    strcat(header, "|}\n\\hline\n");
-
-    // Symbol Row
-    char* symbol_row = malloc(global_num_symbols * 3);
-    symbol_row[0] = '\0';
-    strcat(symbol_row, "&");
-    for(int i = 0; i < global_num_symbols; i++) {
-        char num_str[3] = {original_symbols[i], '\0'};
-        strcat(symbol_row, num_str);
-        if (i == global_num_symbols - 1) {
-            strcat(symbol_row, " \\\\ \\hline\n");
-        } else {
-            strcat(symbol_row, " & ");
-        }
-    }
-
-    // LaTeX Table for Transitions
-    char** latex_table = malloc(global_num_states * sizeof(char *));
-    for (int i = 0; i < global_num_states; i++) {
-        latex_table[i] = malloc(10000);
-        sprintf(latex_table[i], "%s & ", states_names[i][0]);
-        for (int j = 0; j < global_num_symbols; j++) {
-            if (tables_mappings[i][j] == -1) {
-                strcat(latex_table[i], "-");
-            } else {
-                strcat(latex_table[i], states_names[tables_mappings[i][j]][0]);
-            }
-            if (j == global_num_symbols - 1) {
-                strcat(latex_table[i], " \\\\ \\hline\n");
-            } else {
-                strcat(latex_table[i], " & ");
-            }
-        }
-    }
-
-    // Calculate total length and allocate memory for the final string
-    size_t total_length = strlen(q0) + strlen(acceptance_states) + strlen(states_list) +
-                          strlen(list_of_symbols) + strlen(header) + strlen(symbol_row) + 300;
-    for (int i = 0; i < global_num_states; i++) {
-        total_length += strlen(latex_table[i]);
-    }
-
-    char* dfa_components = malloc(total_length);
-    sprintf(dfa_components, "\\noindent\n\nq0 = %sQ = %s$\\Sigma$ = %sF = %s\n $\\delta$ = \n%s%s",
-            q0, states_list, list_of_symbols, acceptance_states, header, symbol_row);
-
-    for(int i = 0; i < global_num_states; i++) {
-        strcat(dfa_components, latex_table[i]);
-        free(latex_table[i]);
-    }
-    strcat(dfa_components, "\\end{tabular}\n");
-
-    // Free allocated memory
-    free(q0);
-    free(acceptance_states);
-    free(states_list);
-    free(list_of_symbols);
-    free(header);
-    free(symbol_row);
-    free(latex_table);
-
-    return dfa_components;
-}
-
 
 // sudo apt update
 // sudo apt-get install texlive-latex-recommended texlive-latex-extra -y
