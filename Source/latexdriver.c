@@ -297,8 +297,7 @@ char* string_array_to_latex(char** strings_array){
           formatted_strings[1],
           formatted_strings[2],
           formatted_strings[3],
-          formatted_strings[4],
-          formatted_strings[5]);
+          formatted_strings[4]);
 
   for(int i = 0; i < ARRAY_SIZE; i++){
     free(formatted_strings[i]);
