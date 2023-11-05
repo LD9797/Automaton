@@ -18,3 +18,23 @@ add_executable(Automaton
         )
 
 target_link_libraries(Automaton ${GTK3_LIBRARIES} -lm -export-dynamic)
+
+add_custom_command(TARGET Automaton PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_SOURCE_DIR}/Start.glade" "${CMAKE_BINARY_DIR}")
+
+add_custom_command(TARGET Automaton PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_SOURCE_DIR}/Table.glade" "${CMAKE_BINARY_DIR}")
+
+add_custom_command(TARGET Automaton PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_SOURCE_DIR}/layout.glade" "${CMAKE_BINARY_DIR}")
+
+add_custom_command(TARGET Automaton PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_SOURCE_DIR}/template.tex" "${CMAKE_BINARY_DIR}")
+
+add_custom_command(TARGET Automaton PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_SOURCE_DIR}/graphviz.sty" "${CMAKE_BINARY_DIR}")

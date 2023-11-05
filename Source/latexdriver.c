@@ -96,6 +96,23 @@ char* str_replace(const char* original, const char* old_substring, const char* n
   return result;
 }
 
+char* read_template(const char* template_file) {
+  FILE* file = fopen(template_file, "r");
+
+  fseek(file, 0, SEEK_END);
+  long length = ftell(file);
+  fseek(file, 0, SEEK_SET);
+
+  char* template = (char*)malloc(length + 1);
+
+  size_t read_len = fread(template, 1, length, file);
+  template[length] = '\0';
+
+  fclose(file);
+  return template;
+}
+
+
 int save_and_compile_dot(char *automaton_graph){
   FILE *file = fopen("fsm.dot", "w");
   fputs(automaton_graph, file);
@@ -106,30 +123,54 @@ int save_and_compile_dot(char *automaton_graph){
 }
 
 int generate_display_latex_doc(char *automaton_graph){
-  char *header = "\\documentclass{article}"
-                 "\\usepackage[pdf]{graphviz}"
-                 "\\begin{document}";
-  char *end = "\\end{document}";
+  char *template = read_template("template.tex");
 
+  char* components_subtitle = " \\subsection*{Components:}";
+
+  char* components = dfa_math_components();
+
+  // Formatting DFA graph for Latex.
+  char* dfa_subtitle = " \\subsection*{DFA Graph:}";
   char* replaced = str_replace(automaton_graph, "digraph", "\\digraph[width=0.8\\columnwidth]");
   char* automaton_replaced = str_replace(replaced, "fsm", "{fsm}");
 
-  size_t size_document = strlen(header) + strlen(automaton_replaced) + strlen(end);
-  char* document = malloc(size_document * sizeof (char*));
-  sprintf(document, "%s %s %s", header, automaton_replaced, end);
+  char* sample_accepted_subtitle = " \\subsection*{Sample accepted strings:}";
 
+  char* sample_rejected_subtitle = " \\subsection*{Sample rejected strings:}";
+
+  char* regex_subtitle = " \\subsection*{Associated Regular Expression:}";
+
+  char *end = "\\end{document}";
+
+  size_t size_document = strlen(components_subtitle) + strlen(dfa_subtitle) + strlen(automaton_replaced) +
+      strlen(sample_accepted_subtitle) + strlen(sample_rejected_subtitle) + strlen(regex_subtitle) + strlen(end) +
+          strlen(components) + strlen(template);
+
+  char* document = malloc(size_document * sizeof (char*));
+
+  sprintf(document, "%s %s %s %s %s %s %s %s %s", template, components_subtitle, components,
+          dfa_subtitle,
+          automaton_replaced,
+          sample_accepted_subtitle,
+          sample_rejected_subtitle,
+          regex_subtitle,
+          end );
+//
+//
   FILE *file = fopen("main.tex", "w");
   fputs(document, file);
   fclose(file);
-
+//
+  free(template);
+  free(components);
   free(replaced);
   free(automaton_replaced);
   free(document);
-
+//
   char *command = "pdflatex --shell-escape main.tex";
   int ret = system(command);
   if (ret == 0){
-    char *display = "evince --fullscreen main.pdf &";
+    char *display = "evince --presentation main.pdf &";
     system(display);
   }
   return ret;
@@ -137,8 +178,7 @@ int generate_display_latex_doc(char *automaton_graph){
 
 void draw_graph() {
   // Header
-  char *header = malloc(200);
-  strcpy(header, "digraph fsm { rankdir=LR; ");
+  char *header = "digraph fsm { rankdir=LR; ";
 
   // Accept States
   size_t size_accept = 0;
@@ -150,7 +190,7 @@ void draw_graph() {
     }
   }
 
-  char *list_accept_states = malloc((size_accept) + MAX_STATES * sizeof(char*));
+  char *list_accept_states = malloc(size_accept + MAX_STATES * sizeof(char*));
   list_accept_states[0] = '\0';
 
   for (int i = 0; i < global_num_states; i++) {
@@ -171,19 +211,24 @@ void draw_graph() {
 
 
   // Transitions
-  char **transitions = malloc((global_num_states * global_num_symbols) * sizeof(char*));
+  char** transitions = malloc(((global_num_states * global_num_symbols) + 1) * sizeof(char*));
   int num_transitions = 1;
-  transitions[0] = malloc(200);
-  sprintf(transitions[0], "secret_node [style=invis, shape=point]; secret_node->%s [style=bold];", *states_names[0]);
+
+  size_t size_initial_transition = strlen("secret_node [style=invis, shape=point]; secret_node->%s [style=bold];") + strlen(*states_names[0]);
+  char *initial_transition = malloc(size_initial_transition);
+  sprintf(initial_transition, "secret_node [style=invis, shape=point]; secret_node->%s [style=bold];", *states_names[0]);
+
+  transitions[0] = initial_transition;
 
   for (int i = 0; i < global_num_states; i++) {
     for (int j = 0; j < global_num_symbols; j++) {
-      int table_destination = tables_mappings[i][j];
+     int table_destination = tables_mappings[i][j];
       if (table_destination == -1) continue;
-
-      char *transition = malloc(300);
+      size_t len_transition = strlen("%s -> %s [label=\"%c\"]; ") + strlen(*states_names[i]) + strlen(*states_names[table_destination]) + 1;
+      char *transition = malloc(len_transition);
       sprintf(transition, "%s -> %s [label=\"%c\"]; ", *states_names[i], *states_names[table_destination], original_symbols[j]);
-      transitions[num_transitions++] = transition;
+      transitions[num_transitions] = transition;
+      num_transitions++;
     }
   }
 
@@ -201,21 +246,156 @@ void draw_graph() {
   }
 
   strcat(automaton_graph, "}");
-
-  printf("String: %s\n", automaton_graph);
-
+//
   save_and_compile_dot(automaton_graph);
   generate_display_latex_doc(automaton_graph);
 
   // Clean up
-  free(header);
   free(list_accept_states);
   free(accept_states_nodes);
   free(transitions);
   free(automaton_graph);
 }
 
+void remove_last_comma(char* str) {
+    int len = strlen(str);
+    for (int i = len - 1; i >= 0; i--) {
+        if (str[i] == ',') {
+            memmove(&str[i], &str[i + 1], len - i - 1);
+            break;
+        }
+    }
+}
 
+
+char* dfa_math_components() {
+    // Initial state q0
+    char* q0 = malloc(strlen(states_names[0][0]) + 30);
+    sprintf(q0, "%s%s", states_names[0][0], "\n\n");
+
+    // Acceptance states -> F
+    char* acceptance_states = malloc(1000);
+    acceptance_states[0] = '\0';
+    strcat(acceptance_states, "\\{");
+
+    // All states -> Q
+    char* states_list = malloc(1000);
+    states_list[0] = '\0';
+    strcat(states_list, "\\{");
+
+    int accept_states_found = 0;
+
+    for (int i = 0; i < global_num_states; i++) {
+        if (accept_states[i] == 1) {
+            accept_states_found = 1;
+            strcat(acceptance_states, states_names[i][0]);
+            strcat(acceptance_states, ", ");
+        }
+        strcat(states_list, states_names[i][0]);
+        if(i != global_num_states - 1)
+            strcat(states_list, ", ");
+        else
+            strcat(states_list, ",");
+    }
+
+    if(accept_states_found) {
+        int len = strlen(acceptance_states);
+        if (len > 0) {
+            acceptance_states[len - 1] = '\0';
+        }
+    }
+
+    strcat(acceptance_states, "\\}\n");
+
+    strcat(states_list, "\\}\n");
+    remove_last_comma(acceptance_states);
+    remove_last_comma(states_list);
+
+    // Alphabet SIGMA
+    char* list_of_symbols = malloc(1000);
+    list_of_symbols[0] = '\0';
+    strcat(list_of_symbols, "\\{");
+
+    for(int j = 0; j < global_num_symbols; j++) {
+        char num_str[3] = {original_symbols[j], '\0'};
+        if (j != 0) {
+            strcat(list_of_symbols, ", ");
+        }
+        strcat(list_of_symbols, num_str);
+    }
+
+    strcat(list_of_symbols, "\\}\n\n");
+
+    // LaTeX Table Header
+    char* header = malloc(strlen("\\begin{tabular}{|c|}\n\\hline\n") + (global_num_symbols * 2) + 20);
+    header[0] = '\0';
+    strcat(header, "\\begin{tabular}{|c");
+    for(int i = 0; i < global_num_symbols; i++) {
+        strcat(header, "|c");
+    }
+    strcat(header, "|}\n\\hline\n");
+
+    // Symbol Row
+    char* symbol_row = malloc(global_num_symbols * 3);
+    symbol_row[0] = '\0';
+    strcat(symbol_row, "&");
+    for(int i = 0; i < global_num_symbols; i++) {
+        char num_str[3] = {original_symbols[i], '\0'};
+        strcat(symbol_row, num_str);
+        if (i == global_num_symbols - 1) {
+            strcat(symbol_row, " \\\\ \\hline\n");
+        } else {
+            strcat(symbol_row, " & ");
+        }
+    }
+
+    // LaTeX Table for Transitions
+    char** latex_table = malloc(global_num_states * sizeof(char *));
+    for (int i = 0; i < global_num_states; i++) {
+        latex_table[i] = malloc(10000);
+        sprintf(latex_table[i], "%s & ", states_names[i][0]);
+        for (int j = 0; j < global_num_symbols; j++) {
+            if (tables_mappings[i][j] == -1) {
+                strcat(latex_table[i], "-");
+            } else {
+                strcat(latex_table[i], states_names[tables_mappings[i][j]][0]);
+            }
+            if (j == global_num_symbols - 1) {
+                strcat(latex_table[i], " \\\\ \\hline\n");
+            } else {
+                strcat(latex_table[i], " & ");
+            }
+        }
+    }
+
+    // Calculate total length and allocate memory for the final string
+    size_t total_length = strlen(q0) + strlen(acceptance_states) + strlen(states_list) +
+                          strlen(list_of_symbols) + strlen(header) + strlen(symbol_row) + 300;
+    for (int i = 0; i < global_num_states; i++) {
+        total_length += strlen(latex_table[i]);
+    }
+
+    char* dfa_components = malloc(total_length);
+    sprintf(dfa_components, "\\noindent\n\nq0 = %sQ = %s$\\Sigma$ = %sF = %s\n $\\delta$ = \n%s%s",
+            q0, states_list, list_of_symbols, acceptance_states, header, symbol_row);
+
+    for(int i = 0; i < global_num_states; i++) {
+        strcat(dfa_components, latex_table[i]);
+        free(latex_table[i]);
+    }
+    strcat(dfa_components, "\\end{tabular}\n");
+
+    // Free allocated memory
+    free(q0);
+    free(acceptance_states);
+    free(states_list);
+    free(list_of_symbols);
+    free(header);
+    free(symbol_row);
+    free(latex_table);
+
+    return dfa_components;
+}
 
 
 // sudo apt update
