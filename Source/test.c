@@ -4,7 +4,7 @@
 
 #define STATES_LEN 4
 #define SYMBOLS_LEN 4
-#define STRING_LEN 50
+#define STRING_LEN 1000
 
 #define SET 0
 #define CLEAR 1
@@ -149,7 +149,7 @@ void modify_expression(struct Expression *expression, const char *value, int rul
 
             if(expression->value[strlen(expression->value) - 1] == ')' && open_paren != NULL && close_paren != NULL && open_paren < close_paren) {
                 *close_paren = '\0';
-                snprintf(temp, sizeof(temp), "%s+%s", expression->value + 1, value);
+                snprintf(temp, sizeof(temp), "%s|%s", expression->value + 1, value);
             } else {
                 snprintf(temp, sizeof(temp), "(%s+%s)", expression->value, value);
             }
@@ -191,6 +191,25 @@ struct Expression ** create_expression_table(int **transitions, char **symbols, 
     return expression_table;
 }
 
+void apply_arden(struct Expression **expression_table, int states_len, int over) {
+    int columns = states_len + 1;
+    struct Expression *distributed_expression = &expression_table[over][over];
+
+    if (distributed_expression->length == 0) {
+        return;
+    }
+
+    for (int i = 0; i < columns; i++) {
+        if (i != over && (expression_table[over][i].length != 0 || i + 1 >= columns)) {
+            char temp[STRING_LEN];
+            snprintf(temp, sizeof(temp), "%s*", distributed_expression->value);
+            modify_expression(&expression_table[over][i], temp, SET);
+        }
+    }
+
+    modify_expression(distributed_expression, NULL, CLEAR);
+}
+
 void resolve_expression(struct Expression **expression_table, int states_len, int to, int from) {
     struct Expression *substitute_expression = &expression_table[to][from];
 
@@ -208,23 +227,6 @@ void resolve_expression(struct Expression **expression_table, int states_len, in
     modify_expression(substitute_expression, NULL, CLEAR);
 }
 
-void apply_arden(struct Expression **expression_table, int states_len, int over) {
-    int columns = states_len + 1;
-    struct Expression *distributed_expression = &expression_table[over][over];
-
-    if (distributed_expression->length == 0) {
-        return;
-    }
-
-    for (int i = 0; i < columns; i++) {
-        if (i != over && (expression_table[over][i].length != 0 || i + 1 >= columns)) {
-            modify_expression(&expression_table[over][i], distributed_expression->value, SET);
-        }
-    }
-
-    modify_expression(distributed_expression, NULL, CLEAR);
-}
-
 void resolve_expression_dependency(struct Expression **expression_table, int states_len, int over, struct Linked_list *excluded) {
     for (int i = 0; i < states_len; ++i) {
         int is_excluded = contains_element(excluded, i);
@@ -233,12 +235,14 @@ void resolve_expression_dependency(struct Expression **expression_table, int sta
             continue;
         }
 
-        if (expression_table[i][i].length != 0) {
-            insert_element(excluded, over, -1);
-            resolve_expression_dependency(expression_table, states_len, i, excluded);
-            remove_element(excluded, over);
-        } else {
-            resolve_expression(expression_table, states_len, over, i);
+        if (expression_table[over][i].length != 0) {
+            if (expression_table[i][i].length != 0) {
+                insert_element(excluded, over, -1);
+                resolve_expression_dependency(expression_table, states_len, i, excluded);
+                remove_element(excluded, over);
+            } else {
+                resolve_expression(expression_table, states_len, over, i);
+            }
         }
     }
 
@@ -273,13 +277,14 @@ void process_expression_table(struct Expression **expression_table, const int *a
             apply_arden(expression_table, states_len, expression_checked);
         }
 
-        for (int i = 0; i < pending->length; i++) {
+        struct Linked_node *current_node = pending->head;
+
+        while(current_node != NULL) {
             int just_temp = 1;
             int columns = states_len + 1;
-            int expression_checked = accept[i];
 
             for (int j = 0; j < columns; j++) {
-                struct Expression *expression = &expression_table[expression_checked][j];
+                struct Expression *expression = &expression_table[current_node->value][j];
 
                 if ((j + 1 < columns && expression->length != 0) || (j + 1 > columns && expression->length == 0)){
                     just_temp = 0;
@@ -287,9 +292,13 @@ void process_expression_table(struct Expression **expression_table, const int *a
                 }
             }
 
+            struct Linked_node *temp_node = current_node->next;
+
             if (just_temp == 1) {
-                remove_element(pending, expression_checked);
+                remove_element(pending, current_node->value);
             }
+
+            current_node = temp_node;
         }
     } while (pending->length != 0);
 
