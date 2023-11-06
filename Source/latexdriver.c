@@ -459,6 +459,7 @@ int generate_display_latex_doc(char *automaton_graph){
   free(automaton_replaced);
   free(sample_accepted);
   free(sample_rejected);
+  free(new_regex);
   free(document);
 //
   char *command = "pdflatex --shell-escape main.tex";
