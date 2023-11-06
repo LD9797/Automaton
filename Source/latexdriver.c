@@ -387,16 +387,30 @@ int generate_display_latex_doc(char *automaton_graph){
 
   char* document = malloc(size_document * sizeof (char*));
 
-  sprintf(document, "%s %s %s %s %s %s %s %s %s %s $%s$ %s", template, components_subtitle, components,
-          dfa_subtitle,
-          automaton_replaced,
-          sample_accepted_subtitle,
-          sample_accepted,
-          sample_rejected_subtitle,
-          sample_rejected,
-          regex_subtitle,
-          new_regex,
-          end );
+  if(new_regex[0] != '\0') {
+
+    sprintf(document, "%s %s %s %s %s %s %s %s %s %s $%s$ %s", template, components_subtitle, components,
+            dfa_subtitle,
+            automaton_replaced,
+            sample_accepted_subtitle,
+            sample_accepted,
+            sample_rejected_subtitle,
+            sample_rejected,
+            regex_subtitle,
+            new_regex,
+            end);
+  } else  {
+    sprintf(document, "%s %s %s %s %s %s %s %s %s %s %s %s", template, components_subtitle, components,
+            dfa_subtitle,
+            automaton_replaced,
+            sample_accepted_subtitle,
+            sample_accepted,
+            sample_rejected_subtitle,
+            sample_rejected,
+            regex_subtitle,
+            new_regex,
+            end);
+  }
 //
 //
   FILE *file = fopen("main.tex", "w");
