@@ -6,7 +6,8 @@
 #define SYMBOLS_LEN 4
 #define STRING_LEN 50
 
-#define INITIALIZE 0
+#define SET 0
+#define CLEAR 1
 
 struct Expression {
     char *value;
@@ -126,8 +127,18 @@ void print_table(struct Expression **expression_table, int rows, int columns) {
     }
 }
 
-void modify_expression(struct Expression *expression, const char *value, int length, int rule) {
-    if (rule == INITIALIZE) {
+void free_expression_table(struct Expression **expression_table, int states_len) {
+    for (int i = 0; i < states_len; i++) {
+        for (int j = 0; j < states_len + 1; j++) {
+            free((expression_table)[i][j].value);
+        }
+        free((expression_table)[i]);
+    }
+    free(expression_table);
+}
+
+void modify_expression(struct Expression *expression, const char *value, int rule) {
+    if (rule == SET) {
         if (expression->length == 0) {
             strcpy(expression->value, value);
             expression->length = (int)strlen(expression->value);
@@ -136,7 +147,7 @@ void modify_expression(struct Expression *expression, const char *value, int len
             char *open_paren = strchr(expression->value, '(');
             char *close_paren = strrchr(expression->value, ')');
 
-            if (open_paren != NULL && close_paren != NULL && open_paren < close_paren) {
+            if(expression->value[strlen(expression->value) - 1] == ')' && open_paren != NULL && close_paren != NULL && open_paren < close_paren) {
                 *close_paren = '\0';
                 snprintf(temp, sizeof(temp), "%s+%s", expression->value + 1, value);
             } else {
@@ -146,8 +157,9 @@ void modify_expression(struct Expression *expression, const char *value, int len
             strcpy(expression->value, temp);
             expression->length = (int)strlen(expression->value);
         }
-    } else {
-
+    } else if (rule == CLEAR) {
+        memset(expression->value, '\0', STRING_LEN);
+        expression->length = 0;
     }
 }
 
@@ -165,10 +177,10 @@ struct Expression ** create_expression_table(int **transitions, char **symbols, 
         }
     }
 
-    modify_expression(&expression_table[0][columns - 1], "ε", 1, INITIALIZE);
+    modify_expression(&expression_table[0][columns - 1], "ε", SET);
     for (int i = 0; i < states_len; i++) {
         for (int j = 0; j < symbols_len; j++) {
-            modify_expression(&expression_table[transitions[i][j] - 1][i], symbols[j], 1, INITIALIZE);
+            modify_expression(&expression_table[transitions[i][j] - 1][i], symbols[j], SET);
         }
     }
 
@@ -179,7 +191,61 @@ struct Expression ** create_expression_table(int **transitions, char **symbols, 
     return expression_table;
 }
 
-void process_expression_table(struct Expression **expression_table, const int *accept, char **symbols, int states_len, int symbols_len, int accept_len, int verbose) {
+void resolve_expression(struct Expression **expression_table, int states_len, int to, int from) {
+    struct Expression *substitute_expression = &expression_table[to][from];
+
+    for (int i = 0; i < states_len + 1; i++) {
+        struct Expression *destination_expression = &expression_table[to][i];
+        struct Expression *origin_expression = &expression_table[from][i];
+
+        if (origin_expression->length != 0) {
+            char temp[STRING_LEN];
+            snprintf(temp, sizeof(temp), "%s%s", origin_expression->value, substitute_expression->value);
+            modify_expression(destination_expression, temp, SET);
+        }
+    }
+
+    modify_expression(substitute_expression, NULL, CLEAR);
+}
+
+void apply_arden(struct Expression **expression_table, int states_len, int over) {
+    int columns = states_len + 1;
+    struct Expression *distributed_expression = &expression_table[over][over];
+
+    if (distributed_expression->length == 0) {
+        return;
+    }
+
+    for (int i = 0; i < columns; i++) {
+        if (i != over && (expression_table[over][i].length != 0 || i + 1 >= columns)) {
+            modify_expression(&expression_table[over][i], distributed_expression->value, SET);
+        }
+    }
+
+    modify_expression(distributed_expression, NULL, CLEAR);
+}
+
+void resolve_expression_dependency(struct Expression **expression_table, int states_len, int over, struct Linked_list *excluded) {
+    for (int i = 0; i < states_len; ++i) {
+        int is_excluded = contains_element(excluded, i);
+
+        if (is_excluded || i == over) {
+            continue;
+        }
+
+        if (expression_table[i][i].length != 0) {
+            insert_element(excluded, over, -1);
+            resolve_expression_dependency(expression_table, states_len, i, excluded);
+            remove_element(excluded, over);
+        } else {
+            resolve_expression(expression_table, states_len, over, i);
+        }
+    }
+
+    apply_arden(expression_table, states_len, over);
+}
+
+void process_expression_table(struct Expression **expression_table, const int *accept, int states_len, int accept_len, int verbose) {
     struct Linked_list *pending = initialize_list();
 
     for (int i = 0; i < accept_len; i++) {
@@ -193,23 +259,41 @@ void process_expression_table(struct Expression **expression_table, const int *a
             for (int j = 0; j < states_len; j++) {
                 struct Expression *current_expression = &expression_table[expression_checked][j];
                 if (expression_checked != j && current_expression->length != 0) {
-                    if (expression_table[j][j].length == 0) {
-                        // TODO: resolve_expression(&expression_table, expression_checked, j);
-                    } else {
+                    if (expression_table[j][j].length != 0) {
                         struct Linked_list *excluded = initialize_list();
                         insert_element(excluded, expression_checked, -1);
-                        // TODO: int resolve_expression_dependency(&expression_table, j, &excluded);
-                        // TODO: if 1 try resolve_expression(&expression_table, expression_checked, j);
-                        // TODO: free excluded_list memory
+                        resolve_expression_dependency(expression_table, states_len, j, excluded);
+                        remove_element(excluded, expression_checked);
                     }
+
+                    resolve_expression(expression_table, states_len, expression_checked, j);
                 }
             }
 
-            // TODO: check if expression is ready for final arden
+            apply_arden(expression_table, states_len, expression_checked);
         }
 
-        // TODO: remove from pending those states that have received a final arden
+        for (int i = 0; i < pending->length; i++) {
+            int just_temp = 1;
+            int columns = states_len + 1;
+            int expression_checked = accept[i];
+
+            for (int j = 0; j < columns; j++) {
+                struct Expression *expression = &expression_table[expression_checked][j];
+
+                if ((j + 1 < columns && expression->length != 0) || (j + 1 > columns && expression->length == 0)){
+                    just_temp = 0;
+                    break;
+                }
+            }
+
+            if (just_temp == 1) {
+                remove_element(pending, expression_checked);
+            }
+        }
     } while (pending->length != 0);
+
+    free(pending);
 
     if (verbose == 1) {
         print_table(expression_table, states_len, states_len + 1);
@@ -245,7 +329,11 @@ int main() {
     }
 
     struct Expression **expression_table = create_expression_table(transitions, symbols, STATES_LEN, SYMBOLS_LEN, 1);
-    process_expression_table(expression_table, accept, symbols, STATES_LEN, SYMBOLS_LEN, accept_len, 1);
-    // TODO: free { expression_table, states, accept } memory
+    process_expression_table(expression_table, accept, STATES_LEN, accept_len, 1);
+
+    free(states);
+    free(accept);
+    free_expression_table(expression_table, STATES_LEN);
+
     return 0;
 }
