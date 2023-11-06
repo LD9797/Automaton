@@ -315,7 +315,7 @@ char* generate_valid_strings() {
 
 
 char* generate_invalid_strings(){
-  char** invalid_strings = invalid_strings_array(regex_automaton);
+  char** invalid_strings = invalid_strings_array(regex_automaton, original_symbols);
   return string_array_to_latex(invalid_strings);
 }
 

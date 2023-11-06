@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "../Headers/string_generator.h"
 
 // References:
@@ -177,9 +178,9 @@ char** valid_strings_array(char *regex){
     // Check for Kleene star in regex
     if (strchr(regex, '*') != NULL){
       for(int i = 0; i < ARRAY_SIZE; i++) {
-          char* sample_string = generate_sample_string(parse_tree, i + 1, 0);
+          char* sample_string = generate_sample_string(parse_tree, i + 1, 1);
           if (i > 0 && stringInArray(sample_string, array, i)){
-            sample_string = generate_sample_string(parse_tree, i + 1, 1);
+            sample_string = generate_sample_string(parse_tree, i + 1, 0);
           }
           array[i] = strdup(sample_string);
       }
@@ -202,6 +203,46 @@ int is_special_char(char c) {
   return strchr(special_chars, c) != NULL;
 }
 
+void replaceChar(char *str, char find, char replace) {
+  if (str) {
+    while (*str) {
+      // If the current character is the one we want to replace, then replace it.
+      if (*str == find) {
+        *str = replace;
+      }
+      str++; // Move to the next character.
+    }
+  }
+}
+
+
+void replaceChars(char *str, const char *list) {
+  size_t list_len = strlen(list);
+  char *p = str;
+  char new_char;
+  int rand_index;
+
+  // Seed the random number generator
+  srand((unsigned int)time(NULL));
+
+  // Loop through each character in the string
+  while (*p != '\0') {
+    // Check if the character is in the list
+    if (strchr(list, *p) != NULL) {
+      do {
+        // Generate a random index for a character in the list
+        rand_index = rand() % list_len;
+        new_char = list[rand_index];
+        // Make sure the new character is not the same as the old one
+      } while (new_char == *p);
+      // Replace the character
+      *p = new_char;
+    }
+    // Move to the next character
+    p++;
+  }
+}
+
 void scramble_regex(char **regex_ptr){
   char *regex = *regex_ptr;
   int length = strlen(regex);
@@ -222,7 +263,7 @@ void scramble_regex(char **regex_ptr){
 
   for (int i = 0; i < count; i++) {
     int j = rand() % count;
-    while (regex[indices[j]] == regex[indices[i]]) {
+    while (regex[indices[j]] == regex[indices[i]] && regex[indices[j]] != ' ') {
       j = rand() % count;
     }
     result_regex[indices[i]] = regex[indices[j]];
@@ -232,15 +273,53 @@ void scramble_regex(char **regex_ptr){
   *regex_ptr = result_regex;
 }
 
-char** invalid_strings_array(char *regex){
+char* replaceUTF8Char(const char* str, const char* find, char replace) {
+  size_t str_len = strlen(str);
+  size_t find_len = strlen(find);
+
+  // Estimate the length of the new string and allocate memory
+  // This allocation assumes every instance of 'find' will be replaced with 'replace', thus potentially reducing the length of the string
+  char* new_str = malloc(str_len + 1);
+  if (!new_str) {
+    perror("malloc failed");
+    return NULL;
+  }
+
+  const char* current = str;
+  char* new_current = new_str;
+
+  while (*current) {
+    if (strncmp(current, find, find_len) == 0) {
+      // Found an occurrence of 'find', replace it with 'replace'
+      *new_current++ = replace;
+      current += find_len;
+    } else {
+      // Copy the current character
+      *new_current++ = *current++;
+    }
+  }
+
+  // Null-terminate the new string
+  *new_current = '\0';
+
+  return new_str;
+}
+
+char** invalid_strings_array(char *regex, char* symbols){
   if(strlen(regex) == 0){
     return valid_strings_array(regex);
   }
   char *copy_regex = regex;
-  scramble_regex(&copy_regex);
+
+  const char find[] = "ε"; // The UTF-8 encoded 'ε' character
+  char* modifiedString = replaceUTF8Char(copy_regex, find, '>');
+  replaceChar(modifiedString, '>', symbols[0]);
+
+  // scramble_regex(&modifiedString);
+  replaceChars(modifiedString, symbols);
   if(strlen(regex) != 1)
-    copy_regex[strlen(regex)] = '\0';
-  return valid_strings_array(copy_regex);
+    modifiedString[strlen(regex)] = '\0';
+  return valid_strings_array(modifiedString);
 }
 
 void test_parse_print_sample() {
@@ -254,6 +333,7 @@ void test_parse_print_sample() {
   free(sampleString);
 }
 
+/*
 void test_scramble(){
   char *regex = "((b(b|ab)*aa|a))*";
   char *copy_regex = regex;
@@ -263,20 +343,23 @@ void test_scramble(){
   in_order_print_tree(parseTree, 0);
   char *sampleString = generate_sample_string(parseTree, 1, 0);
   printf("String: %s\n", sampleString);
-}
+}*/
 
 void test_invalid(){
   char *regex = "((b(b|ab)*aa|a))*";
-  char** invalid_strings = invalid_strings_array(regex);
+  //char** invalid_strings = invalid_strings_array(regex, ['a']);
+  //for(int i = 0; i < ARRAY_SIZE; i++) {
+   // printf("String: %s\n", invalid_strings[i]);
+ // }
+}
+
+void test_valid(){
+  char *regex = "(((ε|(T|CT)*(A|G))|((G|((T|CT)|(T|CT)*)(A|G))|CG)*)|(((T|CT)*|((ε|(T|CT)*(A|G))|((G|((T|CT)|(T|CT)*)(A|G))|CG)*)((T|CT)|(T|CT)*))|(CG|((G|((T|CT)|(T|CT)*)(A|G))|CG)*)((T|CT)|(T|CT)*)*)(CG|((G|((T|CT)|(T|CT)*)(A|G))|CG)*)) | (((T|CT)*|((ε|(T|CT)*(A|G))|((G|((T|CT)|(T|CT)*)(A|G))|CG)*)((T|CT)|(T|CT)*))|(CG|((G|((T|CT)|(T|CT)*)(A|G))|CG)*)((T|CT)|(T|CT)*)*) | (((ε|(T|CT)*(A|G))|((G|((T|CT)|(T|CT)*)(A|G))|CG)*)C|(((T|CT)*|((ε|(T|CT)*(A|G))|((G|((T|CT)|(T|CT)*)(A|G))|CG)*)((T|CT)|(T|CT)*))|(CG|((G|((T|CT)|(T|CT)*)(A|G))|CG)*)((T|CT)|(T|CT)*)*)(C|(CG|((G|((T|CT)|(T|CT)*)(A|G))|CG)*)C))";
+  char symbols[4] = {'A', 'C', 'T', 'G'};
+  char** valid_strings = valid_strings_array(regex);
+  char** invalid_strings = invalid_strings_array(regex, symbols);
   for(int i = 0; i < ARRAY_SIZE; i++) {
     printf("String: %s\n", invalid_strings[i]);
   }
 }
 
-void test_valid(){
-  char *regex = "((b(b|ab)*aa|a))*";
-  char** invalid_strings = valid_strings_array(regex);
-  for(int i = 0; i < ARRAY_SIZE; i++) {
-    printf("String: %s\n", invalid_strings[i]);
-  }
-}
