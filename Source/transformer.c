@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define STATES_LEN 4
-#define SYMBOLS_LEN 4
 #define STRING_LEN 10000
 
 #define SET 0
@@ -182,7 +180,9 @@ struct Expression ** create_expression_table(int **transitions, char **symbols, 
   modify_expression(&expression_table[0][columns - 1], "ε", SET);
   for (int i = 0; i < states_len; i++) {
     for (int j = 0; j < symbols_len; j++) {
-      modify_expression(&expression_table[transitions[i][j] - 1][i], symbols[j], SET);
+      if(transitions[i][j] != -1) {
+        modify_expression(&expression_table[transitions[i][j]] [i], symbols[j], SET);
+      }
     }
   }
 
@@ -311,22 +311,26 @@ void process_expression_table(struct Expression **expression_table, const int *a
   }
 }
 
-int main() {
-  int accept_states[] = {1, 1, 1, 0};
-  char *symbols[] = {"A", "T", "C", "G"};
-  int table[STATES_LEN][STATES_LEN] = {
-      {4, 2, 3, 1},
-      {1, 2, 3, 1},
-      {4, 2, 4, 1},
-      {4, 4, 4, 4}
-  };
 
-  // Adapt table to readable format
-  int *transitions[STATES_LEN];
-  for (int i = 0; i < STATES_LEN; i++) {
-    transitions[i] = table[i];
+
+char **char_array_to_string_array(const char* chars, int n) {
+  char **strings = malloc(n * sizeof(char*));
+  for (int i = 0; i < n; ++i) {
+    strings[i] = malloc(2 * sizeof(char));
+    strings[i][0] = chars[i];
+    strings[i][1] = '\0';
   }
+  return strings;
+}
 
+
+char* dfa_to_regex(const int *accept_states, char* symbols, int** table, int num_symbols, int num_states){
+  int STATES_LEN = num_states;
+
+//  int *transitions[STATES_LEN];
+//  for (int i = 0; i < STATES_LEN; i++) {
+//    transitions[i] = table[i];
+//  }
   // Convert one-hot-vector and states
   int accept_len = 0;
   int *states = (int *)malloc(STATES_LEN * sizeof(int));
@@ -339,12 +343,90 @@ int main() {
     }
   }
 
-  struct Expression **expression_table = create_expression_table(transitions, symbols, STATES_LEN, SYMBOLS_LEN, 1);
+  char **my_symbols = char_array_to_string_array(symbols, num_symbols);
+
+  struct Expression **expression_table = create_expression_table(table, my_symbols, STATES_LEN, num_symbols, 1);
   process_expression_table(expression_table, accept, STATES_LEN, accept_len, 1);
+
+  char* regex = (char *)malloc(STRING_LEN * accept_len * sizeof(char));
+  for (int i = 0; i < accept_len; i++) {
+    strcat(regex, "|");
+    strcat(regex, expression_table[accept[i]][STATES_LEN].value);
+  }
+
+  regex = regex + 1;
 
   free(states);
   free(accept);
   free_expression_table(expression_table, STATES_LEN);
 
-  return 0;
+  return regex;
 }
+
+//
+//int main() {
+//  int accept_states[] = {1, 1, 1, 0};
+//  char symbols[] = {'A', 'T', 'C', 'G'};
+//  int table[4][4] = {
+//      {4, 2, 3, 1},
+//      {1, 2, 3, 1},
+//      {4, 2, 4, 1},
+//      {4, 4, 4, 4}
+//  };
+//
+//  dfa_to_regex(accept_states, symbols, table, 4, 4);
+//
+//  return 0;
+//}
+
+
+//#define STATES_LEN 4
+//#define SYMBOLS_LEN 4
+//
+//
+//
+//int main() {
+//  int accept_states[] = {1, 1, 1, 0};
+//  char *symbols[] = {"A", "T", "C", "G"};
+//  int table[STATES_LEN][STATES_LEN] = {
+//      {4, 2, 3, 1},
+//      {1, 2, 3, 1},
+//      {4, 2, 4, 1},
+//      {4, 4, 4, 4}
+//  };
+//
+//  // Adapt table to readable format
+//  int *transitions[STATES_LEN];
+//  for (int i = 0; i < STATES_LEN; i++) {
+//    transitions[i] = table[i];
+//  }
+//
+//  // Convert one-hot-vector and states
+//  int accept_len = 0;
+//  int *states = (int *)malloc(STATES_LEN * sizeof(int));
+//  int *accept = (int *)malloc(STATES_LEN * sizeof(int));
+//  for (int i = 0; i < STATES_LEN; i++) {
+//    states[i] = i;
+//    if (accept_states[i] == 1) {
+//      accept[accept_len] = accept_len;
+//      accept_len++;
+//    }
+//  }
+//
+//  struct Expression **expression_table = create_expression_table(transitions, symbols, STATES_LEN, SYMBOLS_LEN, 1);
+//  process_expression_table(expression_table, accept, STATES_LEN, accept_len, 1);
+//
+//  char* regex = (char *)malloc(STRING_LEN * accept_len * sizeof(char));
+//  for (int i = 0; i < accept_len; i++) {
+//    strcat(regex, "|");
+//    strcat(regex, expression_table[accept[i]][STATES_LEN].value);
+//  }
+//
+//  regex = regex + 1;
+//
+//  free(states);
+//  free(accept);
+//  free_expression_table(expression_table, STATES_LEN);
+//
+//  return 0;
+//}

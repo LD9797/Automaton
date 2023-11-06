@@ -1,6 +1,7 @@
 #include "../Headers/output.h"
 #include "../Headers/dfadriver.h"
 #include "../Headers/latexdriver.h"
+#include "../Headers/transformer.h"
 
 /// DFA MODEL
 
@@ -210,7 +211,7 @@ void on_btn_exit_layout_clicked(){
 }
 
 int call_latex_driver(){
-  char* sample_regex = "((b(b|ab)*aa|a))*";
+  char* sample_regex = dfa_to_regex(global_accept, global_symbols, global_table,  n_symbols, n_states); // "((b(b|ab)*aa|a))*";
   int ret = init_latex_driver(global_table, global_accept, global_states, global_symbols, n_symbols, n_states, sample_regex);
   return ret;
 }
