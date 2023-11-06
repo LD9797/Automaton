@@ -206,11 +206,10 @@ int is_special_char(char c) {
 void replaceChar(char *str, char find, char replace) {
   if (str) {
     while (*str) {
-      // If the current character is the one we want to replace, then replace it.
       if (*str == find) {
         *str = replace;
       }
-      str++; // Move to the next character.
+      str++;
     }
   }
 }
@@ -222,23 +221,18 @@ void replaceChars(char *str, const char *list) {
   char new_char;
   int rand_index;
 
-  // Seed the random number generator
+
   srand((unsigned int)time(NULL));
 
-  // Loop through each character in the string
+
   while (*p != '\0') {
-    // Check if the character is in the list
     if (strchr(list, *p) != NULL) {
       do {
-        // Generate a random index for a character in the list
         rand_index = rand() % list_len;
         new_char = list[rand_index];
-        // Make sure the new character is not the same as the old one
       } while (new_char == *p);
-      // Replace the character
       *p = new_char;
     }
-    // Move to the next character
     p++;
   }
 }
@@ -277,8 +271,6 @@ char* replaceUTF8Char(const char* str, const char* find, char replace) {
   size_t str_len = strlen(str);
   size_t find_len = strlen(find);
 
-  // Estimate the length of the new string and allocate memory
-  // This allocation assumes every instance of 'find' will be replaced with 'replace', thus potentially reducing the length of the string
   char* new_str = malloc(str_len + 1);
   if (!new_str) {
     perror("malloc failed");
@@ -290,16 +282,13 @@ char* replaceUTF8Char(const char* str, const char* find, char replace) {
 
   while (*current) {
     if (strncmp(current, find, find_len) == 0) {
-      // Found an occurrence of 'find', replace it with 'replace'
       *new_current++ = replace;
       current += find_len;
     } else {
-      // Copy the current character
       *new_current++ = *current++;
     }
   }
 
-  // Null-terminate the new string
   *new_current = '\0';
 
   return new_str;
