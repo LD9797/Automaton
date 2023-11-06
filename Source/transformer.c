@@ -388,7 +388,7 @@ char* dfa_to_regex(const int *accept_states, char* symbols, int** table, int num
   for (int i = 0; i < STATES_LEN; i++) {
     states[i] = i;
     if (accept_states[i] == 1) {
-      accept[accept_len] = accept_len;
+      accept[accept_len] = i;
       accept_len++;
     }
   }
