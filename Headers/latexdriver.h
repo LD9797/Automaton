@@ -3,7 +3,6 @@
 
 
 int install_pdflatex_evince();
-int init_latex_driver(int **table, const int *accept, char **states, const char *symbols, int num_symbols, int num_states);
+int init_latex_driver(int **table, const int *accept, char **states, const char *symbols, int num_symbols, int num_states, char *regex);
 void draw_graph();
-char *dfa_math_components();
 #endif //AUTOMATON_HEADERS_LATEXDRIVER_H_

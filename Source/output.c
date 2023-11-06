@@ -1,6 +1,7 @@
 #include "../Headers/output.h"
 #include "../Headers/dfadriver.h"
 #include "../Headers/latexdriver.h"
+#include "../Headers/transformer.h"
 
 /// DFA MODEL
 
@@ -210,9 +211,34 @@ void on_btn_exit_layout_clicked(){
 }
 
 int call_latex_driver(){
-  int ret = init_latex_driver(global_table, global_accept, global_states, global_symbols, n_symbols, n_states);
+  int is_accepted_states = 0;
+  for(int i = 0; i < n_states; i++){
+      if(global_accept[i] == 1){
+        is_accepted_states = 1;
+        break;
+      }
+  }
+
+  int is_symbols = 1;
+  for(int i = 0; i < n_symbols; i++){
+    if(global_symbols[i] == '\0'){
+      global_symbols[i] = '-';
+      is_symbols = 0;
+    }
+  }
+
+  int ret = 0;
+  if(is_accepted_states && is_symbols) {
+    char *sample_regex =
+        dfa_to_regex(global_accept, global_symbols, global_table, n_symbols, n_states); // "((b(b|ab)*aa|a))*";
+        ret = init_latex_driver(global_table, global_accept, global_states, global_symbols, n_symbols, n_states, sample_regex);
+  } else {
+        ret = init_latex_driver(global_table, global_accept, global_states, global_symbols, n_symbols, n_states, "");
+  }
+
   return ret;
 }
+
 
 void on_btn_print_latex_activate(){
   int ret = call_latex_driver();
