@@ -324,6 +324,56 @@ char **char_array_to_string_array(const char* chars, int n) {
 }
 
 
+int isEpsilon(const char *str) {
+  return (unsigned char)str[0] == 0xCE && (unsigned char)str[1] == 0xB5;
+}
+
+char* removeSubstring(char* str, const char* toRemove) {
+  char *pos, *searchStart = str;
+  size_t len = strlen(toRemove);
+
+  while ((pos = strstr(searchStart, toRemove)) != NULL) {
+    memmove(pos, pos + len, strlen(pos + len) + 1);
+    searchStart = pos;
+  }
+
+  return str;
+}
+
+char* sanitizeString(const char* str) {
+  char* sanitized = (char*)malloc(strlen(str) + 1);
+  if (!sanitized) {
+    fprintf(stderr, "Memory allocation failed\n");
+    return NULL;
+  }
+
+  int writeIndex = 0;
+
+  if (str[0] != '(' && !isEpsilon(str)) {
+    sanitized[writeIndex++] = '(';
+  }
+
+  for (int i = 0; str[i] != '\0';) {
+    if ((str[i] >= ' ' && str[i] <= '~') || isEpsilon(&str[i])) {
+      if (isEpsilon(&str[i])) {
+        sanitized[writeIndex++] = 0xCE;
+        sanitized[writeIndex++] = 0xB5;
+        i += 2;
+      } else {
+        sanitized[writeIndex++] = str[i++];
+      }
+    } else {
+      i++;
+    }
+  }
+
+  sanitized[writeIndex] = '\0';
+  sanitized = removeSubstring(sanitized, "(W|");
+
+  return sanitized;
+}
+
+
 char* dfa_to_regex(const int *accept_states, char* symbols, int** table, int num_symbols, int num_states){
   int STATES_LEN = num_states;
 
@@ -356,11 +406,13 @@ char* dfa_to_regex(const int *accept_states, char* symbols, int** table, int num
 
   regex = regex + 1;
 
+  char* clean_regex = sanitizeString(regex);
+
   free(states);
   free(accept);
   free_expression_table(expression_table, STATES_LEN);
 
-  return regex;
+  return clean_regex;
 }
 
 //

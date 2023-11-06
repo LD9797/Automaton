@@ -270,6 +270,39 @@ char* dfa_math_components() {
 }
 
 
+static int isEpsilon(const char *str) {
+  return (unsigned char)str[0] == 0xCE && (unsigned char)str[1] == 0xB5;
+}
+
+
+static char* sanitizeString(const char* str) {
+  char* sanitized = (char*)malloc(strlen(str) + 1);
+  if (!sanitized) {
+    fprintf(stderr, "Memory allocation failed\n");
+    return NULL;
+  }
+
+  int writeIndex = 0;
+
+  for (int i = 0; str[i] != '\0';) {
+    if ((str[i] >= ' ' && str[i] <= '~') || isEpsilon(&str[i])) {
+      if (isEpsilon(&str[i])) {
+        sanitized[writeIndex++] = 0xCE;
+        sanitized[writeIndex++] = 0xB5;
+        i += 2;
+      } else {
+        sanitized[writeIndex++] = str[i++];
+      }
+    } else {
+      i++;
+    }
+  }
+
+  sanitized[writeIndex] = '\0';
+
+  return sanitized;
+}
+
 char* string_array_to_latex(char** strings_array){
   char* itemize_string = "\\begin{itemize}\n"
                          "%s"
@@ -284,10 +317,13 @@ char* string_array_to_latex(char** strings_array){
   char* format = "\\item %s\n";
   char** formatted_strings = malloc(ARRAY_SIZE* sizeof(char *));
   for(int i = 0; i < ARRAY_SIZE; i++){
-    size_t size = strlen(format) + strlen(strings_array[i]);
+
+    char* clean_string = sanitizeString(strings_array[i]);
+
+    size_t size = strlen(format) + strlen(clean_string);
     total_size += size;
     char* formatted_string = malloc(size * sizeof(char *));
-    sprintf(formatted_string, format, strings_array[i]);
+    sprintf(formatted_string, format, clean_string);
     formatted_strings[i] = formatted_string;
   }
 

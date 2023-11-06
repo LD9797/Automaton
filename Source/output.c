@@ -239,6 +239,7 @@ int call_latex_driver(){
   return ret;
 }
 
+
 void on_btn_print_latex_activate(){
   int ret = call_latex_driver();
   if (ret == 0) draw_graph();
