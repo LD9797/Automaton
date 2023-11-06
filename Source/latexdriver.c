@@ -320,6 +320,38 @@ char* generate_invalid_strings(){
 }
 
 
+char *replaceSubstring(const char *original, const char *toReplace, const char *replacement) {
+  char *result;
+  int i, cnt = 0;
+  int newlen = strlen(replacement);
+  int oldlen = strlen(toReplace);
+
+  for (i = 0; original[i] != '\0'; i++) {
+    if (strstr(&original[i], toReplace) == &original[i]) {
+      cnt++;
+      i += oldlen - 1;
+    }
+  }
+
+  result = (char *)malloc(i + cnt * (newlen - oldlen) + 1);
+  if (!result) return NULL;
+
+  i = 0;
+  while (*original) {
+    if (strstr(original, toReplace) == original) {
+      strcpy(&result[i], replacement);
+      i += newlen;
+      original += oldlen;
+    } else {
+      result[i++] = *original++;
+    }
+  }
+
+  result[i] = '\0';
+  return result;
+}
+
+
 int generate_display_latex_doc(char *automaton_graph){
   char *template = read_template("template.tex");
 
@@ -344,9 +376,14 @@ int generate_display_latex_doc(char *automaton_graph){
 
   char *end = "\\end{document}";
 
+  const char *epsilon = u8"ε";
+  const char *varepsilon = "\\varepsilon";
+  char *new_regex = replaceSubstring(regex_automaton, epsilon, varepsilon);
+
+
   size_t size_document = strlen(components_subtitle) + strlen(dfa_subtitle) + strlen(automaton_replaced) +
       strlen(sample_accepted_subtitle) + strlen(sample_rejected_subtitle) + strlen(regex_subtitle) + strlen(end) +
-          strlen(components) + strlen(template) + strlen(sample_accepted) + strlen(sample_rejected) + strlen(regex_automaton) + 2;
+          strlen(components) + strlen(template) + strlen(sample_accepted) + strlen(sample_rejected) + strlen(new_regex) + 2;
 
   char* document = malloc(size_document * sizeof (char*));
 
@@ -358,7 +395,7 @@ int generate_display_latex_doc(char *automaton_graph){
           sample_rejected_subtitle,
           sample_rejected,
           regex_subtitle,
-          regex_automaton,
+          new_regex,
           end );
 //
 //
