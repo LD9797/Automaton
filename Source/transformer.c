@@ -342,10 +342,6 @@ char* removeSubstring(char* str, const char* toRemove) {
 
 char* sanitizeString(const char* str) {
   char* sanitized = (char*)malloc(strlen(str) + 1);
-  if (!sanitized) {
-    fprintf(stderr, "Memory allocation failed\n");
-    return NULL;
-  }
 
   int writeIndex = 0;
 
