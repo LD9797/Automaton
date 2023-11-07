@@ -300,7 +300,7 @@ char** invalid_strings_array(char *regex, char* symbols){
   }
   char *copy_regex = regex;
 
-  const char find[] = "ε"; // The UTF-8 encoded 'ε' character
+  const char find[] = "ε"; 
   char* modifiedString = replaceUTF8Char(copy_regex, find, '>');
   replaceChar(modifiedString, '>', symbols[0]);
 
