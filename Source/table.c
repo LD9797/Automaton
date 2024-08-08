@@ -3,6 +3,7 @@
 #include <gtk/gtk.h>
 #include "../Headers/table.h"
 #include "../Headers/output.h"
+#include "../Headers/util.h"
 
 /// GTK WIDGETS
 
@@ -28,7 +29,8 @@ void free_global_combo_boxes_array(int rows);
 void deploy_window_table(int num_states, int num_symbols, GtkWidget *previous_window) {
   start_window = previous_window;
   GtkBuilder *builder;
-  builder = gtk_builder_new_from_file("Table.glade");
+  char *glade_file_path = g_strdup_printf("%s/Table.glade", get_executable_path());
+  builder = gtk_builder_new_from_file(glade_file_path);
   window_table = GTK_WIDGET(gtk_builder_get_object(builder, "window_table"));
 
   g_signal_connect(window_table, "destroy", G_CALLBACK(gtk_main_quit), NULL);

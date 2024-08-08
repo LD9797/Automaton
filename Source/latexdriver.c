@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdio.h>
 #include "../Headers/string_generator.h"
+#include "../Headers/util.h"
+#include <gtk/gtk.h>
 
 static int accept_states[MAX_STATES];
 static char original_symbols[MAX_SYMBOLS];
@@ -389,7 +391,8 @@ char *replaceSubstring(const char *original, const char *toReplace, const char *
 
 
 int generate_display_latex_doc(char *automaton_graph){
-  char *template = read_template("template.tex");
+  char *tex_file_path = g_strdup_printf("%s/template.tex", get_executable_path());
+  char *template = read_template(tex_file_path);
 
   char* components_subtitle = " \\subsection*{Components:}";
 

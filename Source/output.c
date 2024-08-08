@@ -2,6 +2,7 @@
 #include "../Headers/dfadriver.h"
 #include "../Headers/latexdriver.h"
 #include "../Headers/transformer.h"
+#include "../Headers/util.h"
 
 /// DFA MODEL
 
@@ -261,7 +262,8 @@ void deploy_window_output(int **Table,
   n_states = num_states;
 
   builder = gtk_builder_new();
-  gtk_builder_add_from_file(builder, "layout.glade", NULL);
+  char *glade_file_path = g_strdup_printf("%s/layout.glade", get_executable_path());
+  gtk_builder_add_from_file(builder, glade_file_path, NULL);
   window = GTK_WIDGET(gtk_builder_get_object(builder, "screen"));
   gtk_widget_set_size_request(GTK_WIDGET(window), DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
 

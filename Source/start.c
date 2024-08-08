@@ -3,6 +3,7 @@
 #include <string.h>
 #include <gtk/gtk.h>
 #include "../Headers/table.h"
+#include "../Headers/util.h"
 
 GtkWidget *window_start;
 GtkWidget *spinner_loading;
@@ -23,7 +24,8 @@ int main(int argc, char *argv[]) {
 
 void deploy_window() {
   GtkBuilder *builder;
-  builder = gtk_builder_new_from_file("Start.glade");
+  char *glade_file_path = g_strdup_printf("%s/Start.glade", get_executable_path());
+  builder = gtk_builder_new_from_file(glade_file_path);
   window_start = GTK_WIDGET(gtk_builder_get_object(builder, "window_start"));
   g_signal_connect(window_start, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
